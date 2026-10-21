@@ -5,6 +5,7 @@ import { LocalTime } from "@/components/local-time";
 import { FileUpload } from "@/components/file-upload";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { PrecheckCard } from "@/components/precheck";
+import { ApprovalCard } from "@/components/approval";
 import type { Precheck } from "@/lib/agents";
 import { finishSubmission, retryPrecheck, startSubmission } from "../actions";
 
@@ -25,6 +26,9 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
     .select("id, file_name, submitted_at, is_late, precheck, precheck_status, feedback, feedback_released_at, student:profiles(full_name)")
     .eq("assignment_id", a.id)
     .order("submitted_at", { ascending: false });
+  // RLS: only the course's professor sees pending feedback drafts.
+  const { data: drafts } = await db.from("approvals").select("id, kind, payload, created_at").eq("kind", "feedback_draft").eq("status", "pending").eq("payload->>assignment_id", a.id);
+  const draftFor = new Map((drafts ?? []).map((d) => [(d.payload as { submission_id?: string }).submission_id, d]));
   const mine = me.role === "student" ? submissions?.[0] : undefined;
   const pending = (submissions ?? []).some((s) => s.precheck_status === "pending");
 
@@ -93,8 +97,9 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
                 <p className="text-gray-600">
                   Pre-check: {s.precheck_status === "done" ? (s.precheck as Precheck | null)?.summary : s.precheck_status}
                   {" · "}
-                  {s.feedback_released_at ? "feedback sent" : <a href="/inbox" className="underline">feedback draft in inbox</a>}
+                  {s.feedback_released_at ? "feedback sent" : draftFor.has(s.id) ? "feedback draft below" : "waiting for the Submission agent"}
                 </p>
+                {draftFor.has(s.id) && <div className="pt-2"><ApprovalCard a={draftFor.get(s.id)!} inline /></div>}
               </li>
             ))}
             {!submissions?.length && <li className="p-4 text-sm text-gray-500">No submissions yet.</li>}

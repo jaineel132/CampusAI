@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ApprovalCard } from "@/components/approval";
 import { revalidatePath } from "next/cache";
 import { createClient, getMe } from "@/lib/supabase";
 import { runOpsDigest, type Digest, type OpsFigures } from "@/lib/jobs";
@@ -26,9 +26,9 @@ export default async function OpsPage() {
   if (me.role !== "admin") redirect("/dashboard");
   const db = await createClient();
   // RLS: admins can read their college's agent runs.
-  const [{ data: run }, { count: batchPending }] = await Promise.all([
+  const [{ data: run }, { data: batch }] = await Promise.all([
     db.from("agent_runs").select("status, error, input, output, started_at, trigger").eq("agent", "ops").order("started_at", { ascending: false }).limit(1).maybeSingle(),
-    db.from("approvals").select("id", { count: "exact", head: true }).eq("kind", "reminder_batch").eq("status", "pending"),
+    db.from("approvals").select("id, kind, payload, created_at").eq("kind", "reminder_batch").eq("status", "pending").order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
   const f = run?.input as unknown as OpsFigures | undefined;
   const d = run?.output as unknown as Digest | undefined;
@@ -64,11 +64,7 @@ export default async function OpsPage() {
         </section>
       )}
 
-      {!!batchPending && (
-        <Link href="/inbox" className="block rounded-lg bg-violet-50 p-3 text-sm text-violet-800 hover:underline">
-          A fee reminder batch is waiting for your approval in the inbox →
-        </Link>
-      )}
+      {batch && <ApprovalCard a={batch} inline />}
 
       {f && (
         <div className="grid gap-4 md:grid-cols-2">

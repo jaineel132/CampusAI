@@ -5,6 +5,7 @@ import { LocalTime } from "@/components/local-time";
 import { FileUpload } from "@/components/file-upload";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { AgentLabel } from "@/components/precheck";
+import { ApprovalCard } from "@/components/approval";
 import { finishMaterial, retryMaterial, retrySummary, startMaterial } from "./actions";
 
 const docStatus: Record<string, string> = {
@@ -24,6 +25,9 @@ export default async function CoursesPage() {
       "id, code, name, term, professor_id, professor:profiles(full_name), enrollments(count), assignments(id, title, due_at), documents(id, title, status, error, page_count, created_at, summary, summary_status)"
     )
     .order("code");
+  // RLS: only the reviewer sees pending drafts, so students get none.
+  const { data: drafts } = await db.from("approvals").select("id, kind, payload, created_at").eq("kind", "announcement").eq("status", "pending");
+  const draftFor = new Map((drafts ?? []).map((a) => [(a.payload as { document_id?: string }).document_id, a]));
 
   const isStudent = me.role === "student";
   const processing = (courses ?? []).some((c) =>
@@ -72,6 +76,7 @@ export default async function CoursesPage() {
                         Summary failed (AI unavailable). <button className="underline">Retry</button>
                       </form>
                     )}
+                    {draftFor.has(d.id) && <div className="pt-2"><ApprovalCard a={draftFor.get(d.id)!} inline /></div>}
                   </li>
                 ))}
                 {!docs.length && <li className="text-gray-500">No materials yet.</li>}
