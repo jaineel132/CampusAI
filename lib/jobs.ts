@@ -4,7 +4,7 @@ import { createServiceClient } from "./supabase";
 import { runAgent } from "./agent";
 import { money } from "./format";
 import type { Json } from "./database.types";
-
+import type { Themes } from "./agents";
 
 const DAY = 864e5;
 const today = () => new Date().toISOString().slice(0, 10);
@@ -72,6 +72,7 @@ export type OpsFigures = {
   outstanding: { student_id: string; student: string; fee_id: string; description: string; balance: number; due_date: string; overdue: boolean }[];
   outstanding_total: number;
   late: { student: string; assignment: string; course: string; status: "late" | "missing" }[];
+  ratings: { course: string; professor: string; average: number; count: number; overview: string }[];
 };
 
 const digestSchema = z.object({
@@ -85,11 +86,12 @@ export type Digest = z.infer<typeof digestSchema>;
 export async function opsFigures(institutionId: string): Promise<OpsFigures> {
   const db = createServiceClient();
   const since = new Date(Date.now() - 14 * DAY).toISOString();
-  const [{ data: inst }, { data: fees }, { data: past }] = await Promise.all([
+  const [{ data: inst }, { data: fees }, { data: past }, { data: courses }] = await Promise.all([
     db.from("institutions").select("currency").eq("id", institutionId).single(),
     db.from("fee_records").select("id, student_id, description, amount_due, amount_paid, due_date, student:profiles(full_name)").eq("institution_id", institutionId).neq("status", "paid").order("due_date"),
     db.from("assignments").select("title, course:courses(code, enrollments(student_id, student:profiles(full_name))), submissions(student_id, is_late)")
       .eq("institution_id", institutionId).gte("due_at", since).lt("due_at", new Date().toISOString()),
+    db.from("courses").select("code, professor:profiles(full_name), professor_ratings(rating), rating_summaries(themes)").eq("institution_id", institutionId),
   ]);
 
   const outstanding = (fees ?? []).map((f) => ({
@@ -103,7 +105,15 @@ export async function opsFigures(institutionId: string): Promise<OpsFigures> {
       return [{ student: e.student?.full_name ?? "", assignment: a.title, course: a.course?.code ?? "", status: sub ? "late" as const : "missing" as const }];
     })
   );
-  return { currency: inst?.currency ?? "USD", outstanding, outstanding_total: outstanding.reduce((s, o) => s + o.balance, 0), late };
+  const ratings = (courses ?? []).filter((c) => c.professor_ratings.length).map((c) => {
+    const themes = c.rating_summaries ? (JSON.parse(c.rating_summaries.themes) as Themes) : null;
+    return {
+      course: c.code, professor: c.professor?.full_name ?? "", count: c.professor_ratings.length,
+      average: Math.round((c.professor_ratings.reduce((s, r) => s + r.rating, 0) / c.professor_ratings.length) * 100) / 100,
+      overview: themes?.overview ?? "",
+    };
+  });
+  return { currency: inst?.currency ?? "USD", outstanding, outstanding_total: outstanding.reduce((s, o) => s + o.balance, 0), late, ratings };
 }
 
 export async function runOpsDigest(institutionId: string, trigger: "schedule" | "event", requestedBy?: string) {
@@ -117,12 +127,15 @@ export async function runOpsDigest(institutionId: string, trigger: "schedule" | 
     instructions: `You are the Ops agent for a college admin. Write a short weekly digest from the figures provided.
 - Use ONLY the numbers given; never estimate or add figures. Amounts are in ${figures.currency}.
 - Name the most urgent follow-ups. Be factual and brief. Refer to people by name, not pronouns.
-- Suggested actions must be things the admin can do in CampusOS: approve the fee reminder batch in the inbox, post a college announcement, or follow up with a named student. No emails, no system changes.`,
+- Suggested actions must be things the admin can do in CampusOS: approve the fee reminder batch in the inbox, post a college announcement, or follow up with a named student or professor. No emails, no system changes.`,
     prompt: `Outstanding fees (${figures.outstanding.length}, total ${money(figures.outstanding_total, figures.currency)}):
 ${figures.outstanding.map((o) => `- ${o.student}: ${o.description}, ${money(o.balance, figures.currency)}, due ${o.due_date}${o.overdue ? " (OVERDUE)" : ""}`).join("\n") || "- none"}
 
 Late or missing submissions (last 14 days, ${figures.late.length}):
-${figures.late.map((l) => `- ${l.student}: ${l.course} ${l.assignment} (${l.status})`).join("\n") || "- none"}`,
+${figures.late.map((l) => `- ${l.student}: ${l.course} ${l.assignment} (${l.status})`).join("\n") || "- none"}
+
+Professor ratings:
+${figures.ratings.map((r) => `- ${r.course} ${r.professor}: ${r.average}/5 from ${r.count}. ${r.overview}`).join("\n") || "- none yet"}`,
     schema: digestSchema,
   });
 

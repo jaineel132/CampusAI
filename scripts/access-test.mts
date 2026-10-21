@@ -44,8 +44,9 @@ assert.equal((await rows(jordan, "institutions")).length, 1, "Jordan sees only h
 assert.ok((await rows(jordan, "profiles")).every((p) => !p.email.endsWith("@northfield.demo")), "no cross-college profiles");
 assert.ok((await rows(jordan, "announcements")).length === 0, "no college A announcements for Jordan");
 
-// Professor sees no student fees
+// Professor sees only their courses' data and no raw ratings
 assert.ok((await rows(mehta, "fee_records")).length === 0, "professor sees no fees");
+assert.ok((await rows(mehta, "professor_ratings")).length === 0, "professor sees no raw ratings");
 
 // Logged-out visitor sees nothing
 for (const t of ["institutions", "profiles", "courses", "fee_records"]) assert.equal((await rows(anon, t)).length, 0, `anon sees no ${t}`);
@@ -94,3 +95,22 @@ if (courseAnns.length) {
 assert.equal((await rows(aarav, "approvals")).length, 0, "students never see the approval inbox");
 assert.ok((await rows(diya, "agent_runs")).every((r) => r.user_id !== aaravId), "no one sees another student's agent runs");
 console.log("✓ approvals + agent runs scoped");
+
+// Ratings: one per student per course per term, only for enrolled courses, never readable by professors.
+const dbms = aaravCourses.find((c) => c.code === "CS301")!;
+const { data: dbmsCourse } = await aarav.from("courses").select("professor_id, term").eq("id", dbms.id).single();
+const rating = { institution_id: (await rows(aarav, "institutions"))[0].id, course_id: dbms.id, professor_id: dbmsCourse!.professor_id, term: dbmsCourse!.term, rating: 5 };
+const diyaId = (await diya.auth.getUser()).data.user!.id;
+const { error: notEnrolled } = await diya.from("professor_ratings").insert({ ...rating, student_id: diyaId });
+assert.ok(notEnrolled, "Diya cannot rate DBMS (not enrolled)");
+await aarav.from("professor_ratings").upsert({ ...rating, student_id: aaravId }, { onConflict: "student_id,course_id,term" });
+const { error: duplicate } = await aarav.from("professor_ratings").insert({ ...rating, student_id: aaravId });
+assert.ok(duplicate, "second rating for the same course + term is rejected");
+assert.equal((await rows(mehta, "professor_ratings")).length, 0, "professor still sees no raw ratings");
+const { data: agg } = await mehta.from("rating_aggregates").select("*");
+assert.ok(agg?.length && !("student_id" in agg[0]), "professor sees only anonymous aggregates");
+console.log("✓ ratings rules passed");
+
+// Leave demo data as it was: remove the test rating (no student delete policy exists, so use the service role).
+await createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
+  .from("professor_ratings").delete().eq("student_id", aaravId).eq("course_id", dbms.id).eq("rating", 5).is("comment", null);

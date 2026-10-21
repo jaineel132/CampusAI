@@ -10,12 +10,14 @@ const nav: Record<Role, { href: string; label: string }[]> = {
     { href: "/courses", label: "Courses & materials" },
     { href: "/assignments", label: "Assignments" },
     { href: "/fees", label: "Fees & payments" },
+    { href: "/ratings", label: "Rate professors" },
   ],
   professor: [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/courses", label: "My courses & uploads" },
     { href: "/assignments", label: "Assignments & submissions" },
     { href: "/inbox", label: "Approval inbox" },
+    { href: "/ratings", label: "Ratings & themes" },
     { href: "/announcements", label: "Announcements" },
   ],
   admin: [
@@ -23,6 +25,7 @@ const nav: Record<Role, { href: string; label: string }[]> = {
     { href: "/ops", label: "Ops digest" },
     { href: "/fees", label: "Fees overview" },
     { href: "/inbox", label: "Approval inbox" },
+    { href: "/ratings", label: "Ratings & themes" },
     { href: "/announcements", label: "Announcements" },
   ],
 };

@@ -365,6 +365,44 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"professor_ratings": {
+                  Row: {
+                    "comment": string | null,"course_id": string,"created_at": string,"id": string,"institution_id": string,"professor_id": string,"rating": number,"student_id": string,"term": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "comment"?: string | null,"course_id": string,"created_at"?: string,"id"?: string,"institution_id": string,"professor_id": string,"rating": number,"student_id": string,"term": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "comment"?: string | null,"course_id"?: string,"created_at"?: string,"id"?: string,"institution_id"?: string,"professor_id"?: string,"rating"?: number,"student_id"?: string,"term"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "professor_ratings_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professor_ratings_institution_id_fkey"
+      columns: ["institution_id"]
+isOneToOne: false
+      referencedRelation: "institutions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professor_ratings_professor_id_fkey"
+      columns: ["professor_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professor_ratings_student_id_fkey"
+      columns: ["student_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"email": string,"full_name": string,"id": string,"institution_id": string,"role": string
@@ -382,6 +420,38 @@ isOneToOne: false
       columns: ["institution_id"]
 isOneToOne: false
       referencedRelation: "institutions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"rating_summaries": {
+                  Row: {
+                    "course_id": string,"institution_id": string,"professor_id": string,"themes": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "course_id": string,"institution_id": string,"professor_id": string,"themes": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "course_id"?: string,"institution_id"?: string,"professor_id"?: string,"themes"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "rating_summaries_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: true
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rating_summaries_institution_id_fkey"
+      columns: ["institution_id"]
+isOneToOne: false
+      referencedRelation: "institutions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rating_summaries_professor_id_fkey"
+      columns: ["professor_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -420,7 +490,27 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "rating_aggregates": {
+                  Row: {
+                    "average": number | null,"count": number | null,"course_id": string | null,"professor_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "professor_ratings_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professor_ratings_professor_id_fkey"
+      columns: ["professor_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
           }
           Functions: {
             "can_see_course":

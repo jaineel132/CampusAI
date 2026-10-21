@@ -93,6 +93,15 @@ export default async function OpsPage() {
               {!f.late.length && <li className="text-gray-500">None.</li>}
             </ul>
           </section>
+          <section className={`${card} md:col-span-2`}>
+            <h2 className="font-medium">Professor ratings</h2>
+            <ul className="mt-2 space-y-1 text-sm">
+              {f.ratings.map((r) => (
+                <li key={r.course}>{r.course} · {r.professor} · <span className="font-medium">{r.average}/5</span> ({r.count}) <span className="text-gray-600">{r.overview}</span></li>
+              ))}
+              {!f.ratings.length && <li className="text-gray-500">No ratings yet.</li>}
+            </ul>
+          </section>
         </div>
       )}
     </div>
