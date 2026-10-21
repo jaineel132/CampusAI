@@ -18,7 +18,7 @@ export default async function InboxPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">Approval inbox</h1>
+        <h1 className="heading">Approval inbox</h1>
         <p className="text-sm text-ink/70">Agents prepared these. Nothing is published or sent until you approve. You can also approve each one right where it happened.</p>
       </div>
 
@@ -27,7 +27,7 @@ export default async function InboxPage() {
 
       {!!decided?.length && (
         <section className="card">
-          <h2 className="border-b border-ink p-4 font-medium">Recently decided</h2>
+          <h2 className="border-b-2 border-ink p-4 font-bold">Recently decided</h2>
           <ul className="divide-y divide-ink/15">
             {decided.map((a) => (
               <li key={a.id} className="flex flex-wrap justify-between gap-2 p-4 text-sm">

@@ -30,11 +30,11 @@ export default async function AssignmentsPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <AutoRefresh active={reading} />
-      <h1 className="text-xl font-semibold">Assignments</h1>
+      <h1 className="heading">Assignments</h1>
       {courses && courses.length > 0 && (
         <section className="space-y-4 card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-medium">Upload an assignment PDF</h2>
+            <h2 className="section-title">Upload an assignment PDF</h2>
             <AgentLabel name="Assignment agent" />
           </div>
           <p className="text-sm text-ink/70">The Assignment agent reads your PDF and drafts the title, instructions, rubric and deadline. Students see nothing until you approve.</p>
@@ -58,28 +58,28 @@ export default async function AssignmentsPage() {
         </section>
       )}
 
-      <ul className="divide-y divide-ink/15 card">
+      <ul className="space-y-3">
         {(assignments ?? []).map((a) => {
           const sub = mine.get(a.id);
           return (
             <li key={a.id}>
-              <Link href={`/assignments/${a.id}`} className="flex flex-wrap items-center justify-between gap-2 p-4 hover:bg-cream">
+              <Link href={`/assignments/${a.id}`} className="card-link flex flex-wrap items-center justify-between gap-2 p-4">
                 <div>
-                  <p className="font-medium">{a.title}</p>
-                  <p className="text-xs text-ink/70">
-                    {a.course?.code} · due <LocalTime iso={a.due_at} /> ({relative(a.due_at)})
+                  <p className="font-bold">{a.title}</p>
+                  <p className="mt-1 text-xs text-ink/70">
+                    <span className="badge bg-sky">{a.course?.code}</span> due <LocalTime iso={a.due_at} /> ({relative(a.due_at)})
                   </p>
                 </div>
                 {me.role === "student" ? (
                   <StatusBadge submitted={!!sub} late={sub?.is_late} overdue={isPast(a.due_at)} />
                 ) : (
-                  <span className="text-sm text-ink/70">{plural(a.submissions?.[0]?.count ?? 0, "submission")}</span>
+                  <span className="badge bg-white">{plural(a.submissions?.[0]?.count ?? 0, "submission")}</span>
                 )}
               </Link>
             </li>
           );
         })}
-        {!assignments?.length && <li className="p-4 text-sm text-ink/70">No assignments yet.</li>}
+        {!assignments?.length && <li className="card p-4 text-sm text-ink/70">No assignments yet.</li>}
       </ul>
     </div>
   );

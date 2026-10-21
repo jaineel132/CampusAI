@@ -36,14 +36,14 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
     <div className="max-w-3xl space-y-6">
       <AutoRefresh active={pending} />
       <div>
-        <p className="text-sm text-ink/70">{a.course?.code} · {a.course?.name}</p>
-        <h1 className="text-xl font-semibold">{a.title}</h1>
-        <p className="text-sm text-ink/70">Due <LocalTime iso={a.due_at} /> ({relative(a.due_at)})</p>
+        <p className="text-sm text-ink/70"><span className="badge bg-sky">{a.course?.code}</span> {a.course?.name}</p>
+        <h1 className="heading mt-2">{a.title}</h1>
+        <p className="mt-2"><span className="badge bg-yellow">Due <LocalTime iso={a.due_at} /> · {relative(a.due_at)}</span></p>
       </div>
 
       <section className="space-y-3 card p-5">
         {a.file_path && (
-          <p className="text-sm">📄 <a href={`/files/assignment/${a.id}`} target="_blank" className="underline">Original assignment PDF</a></p>
+          <p className="text-sm">📄 <a href={`/files/assignment/${a.id}`} target="_blank" className="link">Original assignment PDF</a></p>
         )}
         <p className="whitespace-pre-line text-sm">{a.instructions}</p>
         <div>
@@ -56,10 +56,10 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
 
       {me.role === "student" && (
         <section className="space-y-3 card p-5">
-          <h2 className="font-medium">Your submission</h2>
+          <h2 className="section-title">Your submission</h2>
           {mine ? (
             <p className="text-sm">
-              ✓ <a href={`/files/submission/${mine.id}`} target="_blank" className="underline">{mine.file_name}</a>
+              ✓ <a href={`/files/submission/${mine.id}`} target="_blank" className="link">{mine.file_name}</a>
               {" saved "}<LocalTime iso={mine.submitted_at} />
               {mine.is_late && <span className="text-danger-ink"> (late)</span>}
             </p>
@@ -70,7 +70,7 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
             <PrecheckCard status={mine.precheck_status} precheck={mine.precheck as Precheck | null} retry={retryPrecheck.bind(null, mine.id)} />
           )}
           {mine?.feedback_released_at && (
-            <div className="rounded-lg border border-ink bg-mint p-4 text-sm">
+            <div className="rounded-md border-2 border-ink bg-mint p-4 text-sm">
               <p className="font-medium">Feedback from your professor</p>
               <p className="mt-1 whitespace-pre-line">{mine.feedback}</p>
             </div>
@@ -85,14 +85,14 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
 
       {me.role !== "student" && (
         <section className="card">
-          <h2 className="border-b border-ink p-4 font-medium">Submissions ({submissions?.length ?? 0})</h2>
+          <h2 className="border-b-2 border-ink p-4 font-bold">Submissions ({submissions?.length ?? 0})</h2>
           <ul className="divide-y divide-ink/15">
             {(submissions ?? []).map((s) => (
               <li key={s.id} className="space-y-1 p-4 text-sm">
                 <div className="flex flex-wrap justify-between gap-2">
                   <span className="font-medium">{s.student?.full_name}</span>
                   <span className="text-ink/70">
-                    <a href={`/files/submission/${s.id}`} target="_blank" className="underline">{s.file_name}</a>
+                    <a href={`/files/submission/${s.id}`} target="_blank" className="link">{s.file_name}</a>
                     {" · "}<LocalTime iso={s.submitted_at} />
                     {s.is_late && <span className="text-danger-ink"> · late</span>}
                   </span>

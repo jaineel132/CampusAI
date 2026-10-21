@@ -6,7 +6,7 @@ import { AgentLabel } from "@/components/precheck";
 import { olderThanHours, plural } from "@/lib/format";
 import { SubmitButton } from "@/components/submit-button";
 
-const tone = { positive: "bg-mint text-ok-ink", mixed: "bg-yellow text-warn-ink", negative: "bg-danger/40 text-danger-ink" } as const;
+const tone = { positive: "bg-mint", mixed: "bg-yellow", negative: "bg-danger" } as const;
 
 // One rating per student per course per term; saving again edits it (unique constraint + upsert).
 async function rate(courseId: string, form: FormData) {
@@ -43,7 +43,7 @@ async function StudentRatings() {
   return (
     <div className="max-w-3xl space-y-4">
       <div>
-        <h1 className="text-xl font-semibold">Rate professors</h1>
+        <h1 className="heading">Rate professors</h1>
         <p className="text-sm text-ink/70">Anonymous: professors only see the average, the count and themes, never who wrote what.</p>
       </div>
       {(courses ?? []).map((c) => {
@@ -51,7 +51,7 @@ async function StudentRatings() {
         return (
           <form key={c.id} action={rate.bind(null, c.id)} className="space-y-3 card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-medium">{c.code} — {c.professor?.full_name}</h2>
+              <h2 className="section-title"><span className="badge bg-sky">{c.code}</span> {c.professor?.full_name}</h2>
               <span className="text-xs text-ink/70">
                 {c.term}{r && " · you rated this"}
                 {r && !olderThanHours(r.updated_at, 1 / 60) && <span className="text-ok-ink"> · ✓ Saved</span>}
@@ -61,7 +61,7 @@ async function StudentRatings() {
               {[1, 2, 3, 4, 5].map((n) => (
                 <label key={n} className="cursor-pointer">
                   <input type="radio" name="rating" value={n} required defaultChecked={r?.rating === n} className="peer sr-only" />
-                  <span className="block rounded-md border border-ink px-3 py-1 text-sm peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white peer-focus-visible:ring-2">
+                  <span className="block rounded-md border-2 border-ink bg-white px-3 py-1.5 text-sm font-bold shadow-brutal-sm transition-transform hover:-translate-y-px peer-checked:translate-x-0.5 peer-checked:translate-y-0.5 peer-checked:bg-yellow peer-checked:shadow-none peer-focus-visible:ring-4 peer-focus-visible:ring-sky">
                     {n}★
                   </span>
                 </label>
@@ -90,7 +90,7 @@ async function RatingThemes() {
   return (
     <div className="max-w-3xl space-y-4">
       <div>
-        <h1 className="text-xl font-semibold">Ratings & themes</h1>
+        <h1 className="heading">Ratings & themes</h1>
         <p className="text-sm text-ink/70">Anonymous averages and themes. Individual ratings and names are never shown.</p>
       </div>
       {(courses ?? []).map((c) => {
@@ -100,15 +100,20 @@ async function RatingThemes() {
         return (
           <section key={c.id} className="space-y-2 card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-medium">{c.code} — {c.name} <span className="text-sm font-normal text-ink/70">· {c.professor?.full_name}</span></h2>
-              <span className="text-sm">{agg ? `${agg.average} / 5 · ${plural(agg.count ?? 0, "rating")}` : "No ratings yet"}</span>
+              <h2 className="section-title"><span className="badge bg-sky">{c.code}</span> {c.name} <span className="text-sm font-normal text-ink/70">· {c.professor?.full_name}</span></h2>
+              {agg ? (
+                <span className="rounded-md border-2 border-ink bg-yellow px-3 py-1 text-right shadow-brutal-sm">
+                  <span className="text-xl font-bold">{agg.average}</span> / 5
+                  <span className="block text-xs">{plural(agg.count ?? 0, "rating")}</span>
+                </span>
+              ) : <span className="text-sm muted">No ratings yet</span>}
             </div>
             {themes && (
               <div className="space-y-2 text-sm">
                 <p className="flex flex-wrap items-center gap-2 text-ink/85"><AgentLabel name="Feedback agent" /> {themes.overview}</p>
                 <ul className="flex flex-wrap gap-2">
                   {themes.themes.map((t) => (
-                    <li key={t.theme} className={`rounded-full px-2 py-0.5 text-xs ${tone[t.sentiment]}`}>{t.theme} · {t.mentions}</li>
+                    <li key={t.theme} className={`badge ${tone[t.sentiment]}`}>{t.theme} · {t.mentions}</li>
                   ))}
                 </ul>
               </div>

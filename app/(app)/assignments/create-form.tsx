@@ -10,7 +10,7 @@ export function CreateAssignmentForm({ courses }: { courses: { id: string; code:
   const [error, action, pending] = useActionState(createAssignment, null);
   return (
     <form action={action} className="space-y-3 card p-5">
-      <h2 className="font-medium">New assignment</h2>
+      <h2 className="section-title">New assignment</h2>
       <label className="block text-sm">Course
         <select name="course_id" required className={field}>
           {courses.map((c) => <option key={c.id} value={c.id}>{c.code} — {c.name}</option>)}

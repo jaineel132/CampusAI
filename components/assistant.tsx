@@ -91,7 +91,7 @@ export function Assistant({ role }: { role: string }) {
         {error && (
           <div role="alert" className="rounded-md border-2 border-ink bg-danger/30 p-2">
             The assistant is unavailable right now (AI provider error).{" "}
-            <button onClick={() => regenerate()} className="underline">Retry</button>
+            <button onClick={() => regenerate()} className="link">Retry</button>
           </div>
         )}
       </div>

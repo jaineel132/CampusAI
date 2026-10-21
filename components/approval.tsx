@@ -42,10 +42,10 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
             <p className="font-medium">{s(p.title)}</p>
             <p className="mt-1 text-ink/85">{s(p.body)}</p>
           </div>
-          {!inline && p.source === "ops" && <p className="text-xs text-ink/70">Data used: the latest <a href="/ops" className="underline">Ops digest</a>. Goes to the whole college.</p>}
+          {!inline && p.source === "ops" && <p className="text-xs text-ink/70">Data used: the latest <a href="/ops" className="link">Ops digest</a>. Goes to the whole college.</p>}
           {!inline && !!p.document_id && (
             <p className="text-xs text-ink/70">
-              Data used: <a href={`/files/document/${s(p.document_id)}`} target="_blank" className="underline">{s(p.document_title)}</a>
+              Data used: <a href={`/files/document/${s(p.document_id)}`} target="_blank" className="link">{s(p.document_title)}</a>
               {" — "}{s(p.summary)}
             </p>
           )}
@@ -57,7 +57,7 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
           {!inline && (
             <p className="text-sm">
               <span className="font-medium">{s(p.student_name)}</span> · {s(p.assignment_title)} ·{" "}
-              <a href={`/files/submission/${s(p.submission_id)}`} target="_blank" className="underline">{s(p.file_name)}</a>
+              <a href={`/files/submission/${s(p.submission_id)}`} target="_blank" className="link">{s(p.file_name)}</a>
             </p>
           )}
           <ul className="space-y-1 text-sm">
@@ -91,7 +91,7 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
             <p className="text-xs text-ink/70">Message</p>
             <p className="mt-1">{s(p.message)}</p>
           </div>
-          {!inline && <p className="text-xs text-ink/70">Data used: fee records from the latest <a href="/ops" className="underline">Ops digest</a>.</p>}
+          {!inline && <p className="text-xs text-ink/70">Data used: fee records from the latest <a href="/ops" className="link">Ops digest</a>.</p>}
         </>
       )}
 

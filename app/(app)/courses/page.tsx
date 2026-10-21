@@ -10,10 +10,10 @@ import { SubmitButton } from "@/components/submit-button";
 import { finishMaterial, retryMaterial, retrySummary, startMaterial } from "./actions";
 
 const docStatus: Record<string, string> = {
-  uploaded: "bg-cream text-ink/85",
-  processing: "bg-yellow text-warn-ink",
-  ready: "bg-mint text-ok-ink",
-  failed: "bg-danger/40 text-danger-ink",
+  uploaded: "bg-white",
+  processing: "bg-yellow",
+  ready: "bg-mint",
+  failed: "bg-danger",
 };
 
 export default async function CoursesPage() {
@@ -38,14 +38,14 @@ export default async function CoursesPage() {
   return (
     <div className="max-w-3xl space-y-4">
       <AutoRefresh active={processing} />
-      <h1 className="text-xl font-semibold">{me.role === "professor" ? "My courses & uploads" : "Courses & materials"}</h1>
+      <h1 className="heading">{me.role === "professor" ? "My courses & uploads" : "Courses & materials"}</h1>
       {(courses ?? []).map((c) => {
         // Students only see materials that finished processing.
         const docs = c.documents.filter((d) => !isStudent || d.status === "ready").toSorted((x, y) => y.created_at.localeCompare(x.created_at));
         return (
           <section key={c.id} className="space-y-4 card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-medium">{c.code} — {c.name}</h2>
+              <h2 className="section-title"><span className="badge bg-sky">{c.code}</span> {c.name}</h2>
               <p className="text-xs text-ink/70">
                 {c.professor?.full_name} · {c.term}
                 {!isStudent && ` · ${plural(c.enrollments?.[0]?.count ?? 0, "student")}`}
@@ -53,14 +53,14 @@ export default async function CoursesPage() {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium">Materials</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wide">Materials</h3>
               <ul className="mt-1 space-y-1 text-sm">
                 {docs.map((d) => (
                   <li key={d.id} className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <a href={`/files/document/${d.id}`} target="_blank" className="underline">{d.title}</a>
+                      <a href={`/files/document/${d.id}`} target="_blank" className="link">{d.title}</a>
                       {d.page_count && <span className="text-ink/70">· {plural(d.page_count, "page")}</span>}
-                      {!isStudent && <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${docStatus[d.status]}`}>{d.status}</span>}
+                      {!isStudent && <span className={`badge capitalize ${docStatus[d.status]}`}>{d.status}</span>}
                       {!isStudent && d.status === "failed" && (
                         <>
                           <span className="text-xs text-danger-ink">{d.error}</span>
@@ -90,13 +90,13 @@ export default async function CoursesPage() {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium">Assignments</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wide">Assignments</h3>
               <ul className="mt-1 space-y-1 text-sm">
                 {c.assignments
                   .toSorted((x, y) => x.due_at.localeCompare(y.due_at))
                   .map((a) => (
                     <li key={a.id}>
-                      <Link href={`/assignments/${a.id}`} className="underline">{a.title}</Link>
+                      <Link href={`/assignments/${a.id}`} className="link">{a.title}</Link>
                       <span className="text-ink/70"> · due <LocalTime iso={a.due_at} /></span>
                     </li>
                   ))}
