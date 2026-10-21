@@ -9,7 +9,7 @@ import { embed } from "./ai";
 export async function assistantTools(me: Me) {
   const db = await createClient();
 
-  return {
+  const tools = {
     search_course_notes: tool({
       description: "Search uploaded course materials the user can access. Returns passages with document title and page number.",
       inputSchema: z.object({ query: z.string().min(2).max(500).describe("What to look for in the notes") }),
@@ -63,6 +63,20 @@ export async function assistantTools(me: Me) {
           db.from("payments").select("amount, currency, paid_at, fee:fee_records(description)").order("paid_at", { ascending: false }),
         ]);
         return { currency: me.institution.currency, fees: fees ?? [], payments: payments ?? [], pay_link: "/fees" };
+      },
+    }),
+  };
+
+  // Admin-only: for any other role this tool does not exist, so the model cannot call it.
+  if (me.role !== "admin") return tools;
+  return {
+    ...tools,
+    get_ops_digest: tool({
+      description: "Latest weekly ops digest for the college: outstanding fees, late/missing submissions, rating themes.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const { data } = await db.from("agent_runs").select("input, output, started_at, status").eq("agent", "ops").order("started_at", { ascending: false }).limit(1).maybeSingle();
+        return data ? { generated_at: data.started_at, figures: data.input, digest: data.output, link: "/ops" } : { error: "No digest yet. Run one from /ops." };
       },
     }),
   };

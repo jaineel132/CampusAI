@@ -26,7 +26,7 @@ export async function decide(approvalId: string, _: string | null, form: FormDat
   if (decision === "rejected") return done();
 
   const payload = { ...(approval.payload as Payload) };
-  for (const key of ["title", "body", "feedback"]) {
+  for (const key of ["title", "body", "feedback", "message"]) {
     const v = form.get(key);
     if (typeof v === "string" && v.trim()) payload[key] = v.trim();
   }
@@ -78,6 +78,27 @@ async function apply(
       institution_id: sub.institution_id, user_id: sub.student_id, kind: "feedback",
       title: `Feedback ready: ${sub.assignment.title}`, link: `/assignments/${sub.assignment.id}`,
     });
+    return null;
+  }
+
+  if (kind === "reminder_batch") {
+    // Only send to students who really belong to this college and still owe on that fee.
+    const items = (p.students as { student_id: string; fee_id: string; description: string }[]) ?? [];
+    const { data: fees } = await service
+      .from("fee_records")
+      .select("id, student_id, description, due_date")
+      .eq("institution_id", approval.institution_id)
+      .neq("status", "paid")
+      .in("id", items.map((i) => i.fee_id));
+    if (!fees?.length) return "All of these fees are already paid.";
+    const day = new Date().toISOString().slice(0, 10);
+    await service.from("notifications").upsert(
+      fees.map((f) => ({
+        institution_id: approval.institution_id, user_id: f.student_id, kind: "fee_reminder", link: "/fees",
+        title: `Fee reminder from the college: ${f.description} (due ${f.due_date})`, body: String(p.message), ref: `batch:${f.id}:${day}`,
+      })),
+      { onConflict: "user_id,ref", ignoreDuplicates: true }
+    );
     return null;
   }
 

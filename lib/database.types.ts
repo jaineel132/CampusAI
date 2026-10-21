@@ -303,14 +303,14 @@ isOneToOne: false
                   ]
                 },"notifications": {
                   Row: {
-                    "agent_run_id": string | null,"body": string | null,"created_at": string,"id": string,"institution_id": string,"kind": string,"link": string | null,"read_at": string | null,"title": string,"user_id": string
+                    "agent_run_id": string | null,"body": string | null,"created_at": string,"id": string,"institution_id": string,"kind": string,"link": string | null,"read_at": string | null,"ref": string | null,"title": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "agent_run_id"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"institution_id": string,"kind": string,"link"?: string | null,"read_at"?: string | null,"title": string,"user_id": string
+                    "agent_run_id"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"institution_id": string,"kind": string,"link"?: string | null,"read_at"?: string | null,"ref"?: string | null,"title": string,"user_id": string
                   }
                   Update: {
-                    "agent_run_id"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"institution_id"?: string,"kind"?: string,"link"?: string | null,"read_at"?: string | null,"title"?: string,"user_id"?: string
+                    "agent_run_id"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"institution_id"?: string,"kind"?: string,"link"?: string | null,"read_at"?: string | null,"ref"?: string | null,"title"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {

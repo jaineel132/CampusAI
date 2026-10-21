@@ -3,6 +3,7 @@ import { createClient, getMe } from "@/lib/supabase";
 import { LocalTime } from "@/components/local-time";
 import { AgentLabel } from "@/components/precheck";
 import type { Precheck } from "@/lib/agents";
+import { money } from "@/lib/format";
 import { ApprovalActions } from "./approval-card";
 
 const agentFor: Record<string, string> = {
@@ -80,6 +81,25 @@ export default async function InboxPage() {
               </>
             )}
 
+            {a.kind === "reminder_batch" && (
+              <>
+                <p className="text-sm">Send a fee reminder to these students&apos; activity feeds:</p>
+                <ul className="space-y-1 text-sm">
+                  {((p.students as { student: string; description: string; balance: number; due_date: string }[]) ?? []).map((st, i) => (
+                    <li key={i}>
+                      {st.student} · {st.description} · <span className="font-medium">{money(st.balance, s(p.currency))}</span>
+                      <span className="text-gray-500"> · due {st.due_date}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="rounded-lg bg-gray-50 p-3 text-sm">
+                  <p className="text-xs text-gray-500">Message</p>
+                  <p className="mt-1">{s(p.message)}</p>
+                </div>
+                <p className="text-xs text-gray-500">Data used: fee records from the latest <a href="/ops" className="underline">Ops digest</a>.</p>
+              </>
+            )}
+
             <ApprovalActions
               id={a.id}
               editable={
@@ -87,7 +107,7 @@ export default async function InboxPage() {
                   ? [{ name: "title", label: "Title", value: s(p.title) }, { name: "body", label: "Message", value: s(p.body), rows: 4 }]
                   : a.kind === "feedback_draft"
                     ? [{ name: "feedback", label: "Feedback", value: s(p.feedback), rows: 6 }]
-                    : []
+                    : [{ name: "message", label: "Message", value: s(p.message), rows: 3 }]
               }
             />
           </section>

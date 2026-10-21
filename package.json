@@ -11,7 +11,8 @@
     "test:access": "node --env-file=.env.local scripts/access-test.mts",
     "db:types": "node --env-file=.env.local scripts/db-types.mts",
     "test:chunk": "node scripts/chunk-test.mts",
-    "test:webhook": "node --env-file=.env.local scripts/webhook-test.mts"
+    "test:webhook": "node --env-file=.env.local scripts/webhook-test.mts",
+    "test:cron": "node --env-file=.env.local scripts/cron-test.mts"
   },
   "dependencies": {
     "@ai-sdk/groq": "^4.0.67",
