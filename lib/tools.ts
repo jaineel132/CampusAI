@@ -72,7 +72,7 @@ export async function assistantTools(me: Me) {
   return {
     ...tools,
     get_ops_digest: tool({
-      description: "Latest weekly ops digest for the college: outstanding fees, late/missing submissions, rating themes.",
+      description: "Latest weekly ops digest for the college: outstanding fees and late/missing submissions.",
       inputSchema: z.object({}),
       execute: async () => {
         const { data } = await db.from("agent_runs").select("input, output, started_at, status").eq("agent", "ops").order("started_at", { ascending: false }).limit(1).maybeSingle();
