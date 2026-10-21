@@ -2,6 +2,7 @@ import { createClient, getMe } from "@/lib/supabase";
 import { money } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { SubmitButton } from "@/components/submit-button";
 import { startCheckout } from "./actions";
 
 const statusStyle: Record<string, string> = {
@@ -59,7 +60,7 @@ export default async function FeesPage(props: PageProps<"/fees">) {
                 <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${statusStyle[f.status ?? "unpaid"]}`}>{f.status}</span>
                 {!isAdmin && f.status !== "paid" && (
                   <form action={startCheckout.bind(null, f.id)}>
-                    <button className="rounded-md bg-gray-900 px-3 py-1 text-xs font-medium text-white">Pay {money(f.amount_due - f.amount_paid, cur)}</button>
+                    <SubmitButton pending="Opening Stripe…" className="rounded-md bg-gray-900 px-3 py-1 text-xs font-medium text-white disabled:opacity-50">Pay {money(f.amount_due - f.amount_paid, cur)}</SubmitButton>
                   </form>
                 )}
               </div>

@@ -3,7 +3,8 @@ import { revalidatePath } from "next/cache";
 import { createClient, getMe } from "@/lib/supabase";
 import { feedbackAgent, type Themes } from "@/lib/agents";
 import { AgentLabel } from "@/components/precheck";
-import { plural } from "@/lib/format";
+import { olderThanHours, plural } from "@/lib/format";
+import { SubmitButton } from "@/components/submit-button";
 
 const tone = { positive: "bg-green-100 text-green-800", mixed: "bg-amber-100 text-amber-800", negative: "bg-red-100 text-red-800" } as const;
 
@@ -37,7 +38,7 @@ async function StudentRatings() {
   const db = await createClient();
   const [{ data: courses }, { data: mine }] = await Promise.all([
     db.from("courses").select("id, code, name, term, professor:profiles(full_name)").order("code"),
-    db.from("professor_ratings").select("course_id, term, rating, comment"), // RLS: only my own rows
+    db.from("professor_ratings").select("course_id, term, rating, comment, updated_at"), // RLS: only my own rows
   ]);
   return (
     <div className="max-w-3xl space-y-4">
@@ -51,7 +52,10 @@ async function StudentRatings() {
           <form key={c.id} action={rate.bind(null, c.id)} className="space-y-3 rounded-xl border border-gray-200 bg-white p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-medium">{c.code} — {c.professor?.full_name}</h2>
-              <span className="text-xs text-gray-500">{c.term}{r && " · you rated this"}</span>
+              <span className="text-xs text-gray-500">
+                {c.term}{r && " · you rated this"}
+                {r && !olderThanHours(r.updated_at, 1 / 60) && <span className="text-green-700"> · ✓ Saved</span>}
+              </span>
             </div>
             <fieldset className="flex gap-2" aria-label={`Rating for ${c.code}`}>
               {[1, 2, 3, 4, 5].map((n) => (
@@ -67,7 +71,7 @@ async function StudentRatings() {
               Comment (optional)
               <textarea name="comment" rows={2} defaultValue={r?.comment ?? ""} maxLength={1000} className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
             </label>
-            <button className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white">{r ? "Update rating" : "Submit rating"}</button>
+            <SubmitButton pending="Saving…">{r ? "Update rating" : "Submit rating"}</SubmitButton>
           </form>
         );
       })}

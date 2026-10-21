@@ -6,7 +6,7 @@ import { runOpsDigest, type Digest, type OpsFigures } from "@/lib/jobs";
 import { money } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
 import { AgentLabel } from "@/components/precheck";
-import { RunDigestButton } from "./run-button";
+import { SubmitButton } from "@/components/submit-button";
 
 export const maxDuration = 60;
 
@@ -42,7 +42,7 @@ export default async function OpsPage() {
             {run ? <>Generated <LocalTime iso={run.started_at} /> ({run.trigger === "schedule" ? "weekly schedule" : "on request"})</> : "No digest yet."}
           </p>
         </div>
-        <form action={runNow}><RunDigestButton /></form>
+        <form action={runNow}><SubmitButton pending="Ops agent is working…">Run digest now</SubmitButton></form>
       </div>
 
       {run?.status === "failed" && (

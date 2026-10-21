@@ -1,4 +1,5 @@
 import type { Precheck } from "@/lib/agents";
+import { SubmitButton } from "@/components/submit-button";
 
 const mark = { met: "✓", partial: "◐", missing: "✗" } as const;
 const color = { met: "text-green-700", partial: "text-amber-700", missing: "text-red-700" } as const;
@@ -19,7 +20,7 @@ export function PrecheckCard({ status, precheck, retry }: { status: string; prec
       {status === "failed" && (
         <div className="text-red-700">
           <p>{precheck?.summary ?? "The pre-check couldn't run (AI service unavailable). Your submission is saved."}</p>
-          {retry && <form action={retry}><button className="mt-1 underline">Retry pre-check</button></form>}
+          {retry && <form action={retry}><SubmitButton pending="Retrying…" className="mt-1 underline disabled:opacity-50">Retry pre-check</SubmitButton></form>}
         </div>
       )}
       {status === "done" && precheck && (

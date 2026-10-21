@@ -6,6 +6,7 @@ import { FileUpload } from "@/components/file-upload";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { AgentLabel } from "@/components/precheck";
 import { ApprovalCard } from "@/components/approval";
+import { SubmitButton } from "@/components/submit-button";
 import { finishMaterial, retryMaterial, retrySummary, startMaterial } from "./actions";
 
 const docStatus: Record<string, string> = {
@@ -63,7 +64,7 @@ export default async function CoursesPage() {
                       {!isStudent && d.status === "failed" && (
                         <>
                           <span className="text-xs text-red-600">{d.error}</span>
-                          <form action={retryMaterial.bind(null, d.id)}><button className="text-xs underline">Retry</button></form>
+                          <form action={retryMaterial.bind(null, d.id)}><SubmitButton pending="Retrying…" className="text-xs underline disabled:opacity-50">Retry</SubmitButton></form>
                         </>
                       )}
                     </div>
@@ -73,7 +74,7 @@ export default async function CoursesPage() {
                     {!isStudent && d.status === "ready" && d.summary_status === "pending" && <p className="text-xs text-gray-500">Writing summary and announcement draft…</p>}
                     {!isStudent && d.summary_status === "failed" && (
                       <form action={retrySummary.bind(null, d.id)} className="text-xs text-red-600">
-                        Summary failed (AI unavailable). <button className="underline">Retry</button>
+                        Summary failed (AI unavailable). <SubmitButton pending="Retrying…" className="underline disabled:opacity-50">Retry</SubmitButton>
                       </form>
                     )}
                     {draftFor.has(d.id) && <div className="pt-2"><ApprovalCard a={draftFor.get(d.id)!} inline /></div>}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient, getMe } from "@/lib/supabase";
 import { LocalTime } from "@/components/local-time";
+import { SubmitButton } from "@/components/submit-button";
 
 const field = "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm";
 
@@ -44,7 +45,7 @@ export default async function AnnouncementsPage() {
         )}
         <label className="block text-sm">Title<input name="title" required className={field} /></label>
         <label className="block text-sm">Message<textarea name="body" required rows={3} className={field} /></label>
-        <button className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white">Publish</button>
+        <SubmitButton pending="Publishing…">Publish</SubmitButton>
       </form>
 
       <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">

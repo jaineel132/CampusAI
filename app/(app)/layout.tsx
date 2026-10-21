@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient, getMe, type Role } from "@/lib/supabase";
 import { signOut } from "@/app/actions";
 import { Assistant } from "@/components/assistant";
+import { SubmitButton } from "@/components/submit-button";
 
 // Add a link here when its page exists (PRD: no button that does nothing).
 const nav: Record<Role, { href: string; label: string }[]> = {
@@ -53,7 +54,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <p>{me.full_name}</p>
           <p className="text-xs capitalize text-gray-500">{me.role}</p>
           <form action={signOut}>
-            <button className="mt-2 text-xs text-gray-500 underline">Sign out</button>
+            <SubmitButton pending="Signing out…" className="mt-2 text-xs text-gray-500 underline">Sign out</SubmitButton>
           </form>
         </div>
       </aside>

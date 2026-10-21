@@ -5,6 +5,7 @@ import { daysFromNow, isPast, money, olderThanHours, plural, relative } from "@/
 import { plannerAgent, type Plan } from "@/lib/agents";
 import { AgentLabel } from "@/components/precheck";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { SubmitButton } from "@/components/submit-button";
 import { refreshPlan } from "./actions";
 import { LocalTime } from "@/components/local-time";
 import { StatusBadge } from "@/components/status-badge";
@@ -125,7 +126,7 @@ async function WeekPlan({ me }: { me: Me }) {
       )}
       {run && !running && !stale && (
         <form action={refreshPlan} className="text-xs text-gray-500">
-          Updated {relative(run.started_at)} · <button className="underline">Refresh plan</button>
+          Updated {relative(run.started_at)} · <SubmitButton pending="Refreshing…" className="underline disabled:opacity-50">Refresh plan</SubmitButton>
         </form>
       )}
     </section>
