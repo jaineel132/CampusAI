@@ -32,12 +32,12 @@ export default async function AssignmentsPage() {
       <AutoRefresh active={reading} />
       <h1 className="text-xl font-semibold">Assignments</h1>
       {courses && courses.length > 0 && (
-        <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-5">
+        <section className="space-y-4 card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-medium">Upload an assignment PDF</h2>
             <AgentLabel name="Assignment agent" />
           </div>
-          <p className="text-sm text-gray-600">The Assignment agent reads your PDF and drafts the title, instructions, rubric and deadline. Students see nothing until you approve.</p>
+          <p className="text-sm text-ink/70">The Assignment agent reads your PDF and drafts the title, instructions, rubric and deadline. Students see nothing until you approve.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             {courses.map((c) => (
               <div key={c.id} className="space-y-1 text-sm">
@@ -46,40 +46,40 @@ export default async function AssignmentsPage() {
               </div>
             ))}
           </div>
-          {reading && <p className="text-sm text-gray-500">The Assignment agent is reading {lastFile}…</p>}
+          {reading && <p className="text-sm text-ink/70">The Assignment agent is reading {lastFile}…</p>}
           {lastRun?.status === "failed" && (
-            <p role="alert" className="text-sm text-red-600">Couldn&apos;t draft from {lastFile}: {lastRun.error?.slice(0, 120)} Upload it again, or create the assignment by hand.</p>
+            <p role="alert" className="text-sm text-danger-ink">Couldn&apos;t draft from {lastFile}: {lastRun.error?.slice(0, 120)} Upload it again, or create the assignment by hand.</p>
           )}
           {(drafts ?? []).map((d) => <ApprovalCard key={d.id} a={d} inline />)}
           <details>
-            <summary className="cursor-pointer text-sm text-gray-600 underline">Or create an assignment by hand</summary>
+            <summary className="cursor-pointer text-sm text-ink/70 underline">Or create an assignment by hand</summary>
             <div className="mt-3"><CreateAssignmentForm courses={courses} /></div>
           </details>
         </section>
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-xl border border-gray-200 bg-white">
+      <ul className="divide-y divide-ink/15 card">
         {(assignments ?? []).map((a) => {
           const sub = mine.get(a.id);
           return (
             <li key={a.id}>
-              <Link href={`/assignments/${a.id}`} className="flex flex-wrap items-center justify-between gap-2 p-4 hover:bg-gray-50">
+              <Link href={`/assignments/${a.id}`} className="flex flex-wrap items-center justify-between gap-2 p-4 hover:bg-cream">
                 <div>
                   <p className="font-medium">{a.title}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-ink/70">
                     {a.course?.code} · due <LocalTime iso={a.due_at} /> ({relative(a.due_at)})
                   </p>
                 </div>
                 {me.role === "student" ? (
                   <StatusBadge submitted={!!sub} late={sub?.is_late} overdue={isPast(a.due_at)} />
                 ) : (
-                  <span className="text-sm text-gray-600">{plural(a.submissions?.[0]?.count ?? 0, "submission")}</span>
+                  <span className="text-sm text-ink/70">{plural(a.submissions?.[0]?.count ?? 0, "submission")}</span>
                 )}
               </Link>
             </li>
           );
         })}
-        {!assignments?.length && <li className="p-4 text-sm text-gray-500">No assignments yet.</li>}
+        {!assignments?.length && <li className="p-4 text-sm text-ink/70">No assignments yet.</li>}
       </ul>
     </div>
   );

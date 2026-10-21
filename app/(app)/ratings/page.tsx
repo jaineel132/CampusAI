@@ -6,7 +6,7 @@ import { AgentLabel } from "@/components/precheck";
 import { olderThanHours, plural } from "@/lib/format";
 import { SubmitButton } from "@/components/submit-button";
 
-const tone = { positive: "bg-green-100 text-green-800", mixed: "bg-amber-100 text-amber-800", negative: "bg-red-100 text-red-800" } as const;
+const tone = { positive: "bg-mint text-ok-ink", mixed: "bg-yellow text-warn-ink", negative: "bg-danger/40 text-danger-ink" } as const;
 
 // One rating per student per course per term; saving again edits it (unique constraint + upsert).
 async function rate(courseId: string, form: FormData) {
@@ -44,24 +44,24 @@ async function StudentRatings() {
     <div className="max-w-3xl space-y-4">
       <div>
         <h1 className="text-xl font-semibold">Rate professors</h1>
-        <p className="text-sm text-gray-500">Anonymous: professors only see the average, the count and themes, never who wrote what.</p>
+        <p className="text-sm text-ink/70">Anonymous: professors only see the average, the count and themes, never who wrote what.</p>
       </div>
       {(courses ?? []).map((c) => {
         const r = mine?.find((m) => m.course_id === c.id && m.term === c.term);
         return (
-          <form key={c.id} action={rate.bind(null, c.id)} className="space-y-3 rounded-xl border border-gray-200 bg-white p-5">
+          <form key={c.id} action={rate.bind(null, c.id)} className="space-y-3 card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-medium">{c.code} — {c.professor?.full_name}</h2>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-ink/70">
                 {c.term}{r && " · you rated this"}
-                {r && !olderThanHours(r.updated_at, 1 / 60) && <span className="text-green-700"> · ✓ Saved</span>}
+                {r && !olderThanHours(r.updated_at, 1 / 60) && <span className="text-ok-ink"> · ✓ Saved</span>}
               </span>
             </div>
             <fieldset className="flex gap-2" aria-label={`Rating for ${c.code}`}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <label key={n} className="cursor-pointer">
                   <input type="radio" name="rating" value={n} required defaultChecked={r?.rating === n} className="peer sr-only" />
-                  <span className="block rounded-md border border-gray-300 px-3 py-1 text-sm peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white peer-focus-visible:ring-2">
+                  <span className="block rounded-md border border-ink px-3 py-1 text-sm peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white peer-focus-visible:ring-2">
                     {n}★
                   </span>
                 </label>
@@ -69,7 +69,7 @@ async function StudentRatings() {
             </fieldset>
             <label className="block text-sm">
               Comment (optional)
-              <textarea name="comment" rows={2} defaultValue={r?.comment ?? ""} maxLength={1000} className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
+              <textarea name="comment" rows={2} defaultValue={r?.comment ?? ""} maxLength={1000} className="mt-1 field" />
             </label>
             <SubmitButton pending="Saving…">{r ? "Update rating" : "Submit rating"}</SubmitButton>
           </form>
@@ -91,21 +91,21 @@ async function RatingThemes() {
     <div className="max-w-3xl space-y-4">
       <div>
         <h1 className="text-xl font-semibold">Ratings & themes</h1>
-        <p className="text-sm text-gray-500">Anonymous averages and themes. Individual ratings and names are never shown.</p>
+        <p className="text-sm text-ink/70">Anonymous averages and themes. Individual ratings and names are never shown.</p>
       </div>
       {(courses ?? []).map((c) => {
         const agg = aggregates?.find((a) => a.course_id === c.id);
         const sum = summaries?.find((s) => s.course_id === c.id);
         const themes = sum ? (JSON.parse(sum.themes) as Themes) : null;
         return (
-          <section key={c.id} className="space-y-2 rounded-xl border border-gray-200 bg-white p-5">
+          <section key={c.id} className="space-y-2 card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-medium">{c.code} — {c.name} <span className="text-sm font-normal text-gray-500">· {c.professor?.full_name}</span></h2>
+              <h2 className="font-medium">{c.code} — {c.name} <span className="text-sm font-normal text-ink/70">· {c.professor?.full_name}</span></h2>
               <span className="text-sm">{agg ? `${agg.average} / 5 · ${plural(agg.count ?? 0, "rating")}` : "No ratings yet"}</span>
             </div>
             {themes && (
               <div className="space-y-2 text-sm">
-                <p className="flex flex-wrap items-center gap-2 text-gray-700"><AgentLabel name="Feedback agent" /> {themes.overview}</p>
+                <p className="flex flex-wrap items-center gap-2 text-ink/85"><AgentLabel name="Feedback agent" /> {themes.overview}</p>
                 <ul className="flex flex-wrap gap-2">
                   {themes.themes.map((t) => (
                     <li key={t.theme} className={`rounded-full px-2 py-0.5 text-xs ${tone[t.sentiment]}`}>{t.theme} · {t.mentions}</li>

@@ -27,23 +27,23 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
   const p = a.payload as P;
   const rubric = Array.isArray(p.rubric) ? (p.rubric as string[]) : [];
   return (
-    <section className={`space-y-3 rounded-xl border p-5 ${inline ? "border-violet-200 bg-violet-50/40" : "border-gray-200 bg-white"}`}>
+    <section className={`card space-y-3 p-5 ${inline ? "bg-yellow/30" : ""}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-medium">
+        <h2 className="section-title">
           {approvalTitle[a.kind]}
           {inline ? " · waiting for your approval" : ` · ${s(p.course_code) || "College"}`}
         </h2>
-        <span className="flex items-center gap-2 text-xs text-gray-500"><AgentLabel name={agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>
+        <span className="flex items-center gap-2 text-xs text-ink/70"><AgentLabel name={agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>
       </div>
 
       {a.kind === "announcement" && (
         <>
-          <div className="rounded-lg bg-gray-50 p-3 text-sm">
+          <div className="rounded-md border-2 border-ink bg-cream p-3 text-sm">
             <p className="font-medium">{s(p.title)}</p>
-            <p className="mt-1 text-gray-700">{s(p.body)}</p>
+            <p className="mt-1 text-ink/85">{s(p.body)}</p>
           </div>
           {!inline && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ink/70">
               Data used: <a href={`/files/document/${s(p.document_id)}`} target="_blank" className="underline">{s(p.document_title)}</a>
               {" — "}{s(p.summary)}
             </p>
@@ -63,14 +63,14 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
             {((p.items as Precheck["items"]) ?? []).map((it) => (
               <li key={it.rubric_item}>
                 <span className="font-medium">{it.status === "met" ? "✓" : it.status === "partial" ? "◐" : "✗"} {it.rubric_item}</span>
-                <span className="text-gray-600"> — {it.note}</span>
+                <span className="text-ink/70"> — {it.note}</span>
               </li>
             ))}
           </ul>
-          <div className="rounded-lg bg-gray-50 p-3 text-sm">
-            <p className="text-xs text-gray-500">Draft feedback (sent to the student on approval)</p>
+          <div className="rounded-md border-2 border-ink bg-cream p-3 text-sm">
+            <p className="text-xs text-ink/70">Draft feedback (sent to the student on approval)</p>
             <p className="mt-1 whitespace-pre-line">{s(p.feedback)}</p>
-            <p className="mt-2 text-xs text-gray-500">Indicative grade (only you see this; you decide the final grade): {s(p.indicative_grade)}</p>
+            <p className="mt-2 text-xs text-ink/70">Indicative grade (only you see this; you decide the final grade): {s(p.indicative_grade)}</p>
           </div>
         </>
       )}
@@ -82,34 +82,34 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
             {((p.students as { student: string; description: string; balance: number; due_date: string }[]) ?? []).map((st, i) => (
               <li key={i}>
                 {st.student} · {st.description} · <span className="font-medium">{money(st.balance, s(p.currency))}</span>
-                <span className="text-gray-500"> · due {st.due_date}</span>
+                <span className="text-ink/70"> · due {st.due_date}</span>
               </li>
             ))}
           </ul>
-          <div className="rounded-lg bg-gray-50 p-3 text-sm">
-            <p className="text-xs text-gray-500">Message</p>
+          <div className="rounded-md border-2 border-ink bg-cream p-3 text-sm">
+            <p className="text-xs text-ink/70">Message</p>
             <p className="mt-1">{s(p.message)}</p>
           </div>
-          {!inline && <p className="text-xs text-gray-500">Data used: fee records from the latest <a href="/ops" className="underline">Ops digest</a>.</p>}
+          {!inline && <p className="text-xs text-ink/70">Data used: fee records from the latest <a href="/ops" className="underline">Ops digest</a>.</p>}
         </>
       )}
 
       {a.kind === "assignment_draft" && (
         <>
-          <p className="text-xs text-gray-500">From {s(p.file_name)}. Students will also see the original PDF.</p>
-          <div className="space-y-2 rounded-lg bg-gray-50 p-3 text-sm">
+          <p className="text-xs text-ink/70">From {s(p.file_name)}. Students will also see the original PDF.</p>
+          <div className="space-y-2 rounded-md border-2 border-ink bg-cream p-3 text-sm">
             <p className="font-medium">{s(p.title)}</p>
-            <p className="max-h-48 overflow-y-auto whitespace-pre-line text-gray-700">{s(p.instructions)}</p>
+            <p className="max-h-48 overflow-y-auto whitespace-pre-line text-ink/85">{s(p.instructions)}</p>
             <div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-ink/70">
                 Rubric {p.rubric_source === "derived" ? "(the PDF has none, so the agent built it from the requirements; please check)" : "(from the PDF)"}
               </p>
               <ul className="list-disc pl-5">{rubric.map((r) => <li key={r}>{r}</li>)}</ul>
             </div>
             {p.due_local ? (
-              <p>Deadline: <span className="font-medium">{s(p.due_local).replace("T", " ")}</span>{p.due_quote ? <span className="text-gray-500"> (PDF says “{s(p.due_quote)}”)</span> : null}</p>
+              <p>Deadline: <span className="font-medium">{s(p.due_local).replace("T", " ")}</span>{p.due_quote ? <span className="text-ink/70"> (PDF says “{s(p.due_quote)}”)</span> : null}</p>
             ) : (
-              <p className="text-amber-700">No deadline found in the PDF. Set one below before approving.</p>
+              <p className="text-warn-ink">No deadline found in the PDF. Set one below before approving.</p>
             )}
           </div>
         </>

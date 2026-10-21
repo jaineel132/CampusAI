@@ -10,10 +10,10 @@ import { SubmitButton } from "@/components/submit-button";
 import { finishMaterial, retryMaterial, retrySummary, startMaterial } from "./actions";
 
 const docStatus: Record<string, string> = {
-  uploaded: "bg-gray-100 text-gray-700",
-  processing: "bg-amber-100 text-amber-800",
-  ready: "bg-green-100 text-green-800",
-  failed: "bg-red-100 text-red-800",
+  uploaded: "bg-cream text-ink/85",
+  processing: "bg-yellow text-warn-ink",
+  ready: "bg-mint text-ok-ink",
+  failed: "bg-danger/40 text-danger-ink",
 };
 
 export default async function CoursesPage() {
@@ -43,10 +43,10 @@ export default async function CoursesPage() {
         // Students only see materials that finished processing.
         const docs = c.documents.filter((d) => !isStudent || d.status === "ready").toSorted((x, y) => y.created_at.localeCompare(x.created_at));
         return (
-          <section key={c.id} className="space-y-4 rounded-xl border border-gray-200 bg-white p-5">
+          <section key={c.id} className="space-y-4 card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-medium">{c.code} — {c.name}</h2>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-ink/70">
                 {c.professor?.full_name} · {c.term}
                 {!isStudent && ` · ${plural(c.enrollments?.[0]?.count ?? 0, "student")}`}
               </p>
@@ -59,28 +59,28 @@ export default async function CoursesPage() {
                   <li key={d.id} className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <a href={`/files/document/${d.id}`} target="_blank" className="underline">{d.title}</a>
-                      {d.page_count && <span className="text-gray-500">· {plural(d.page_count, "page")}</span>}
+                      {d.page_count && <span className="text-ink/70">· {plural(d.page_count, "page")}</span>}
                       {!isStudent && <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${docStatus[d.status]}`}>{d.status}</span>}
                       {!isStudent && d.status === "failed" && (
                         <>
-                          <span className="text-xs text-red-600">{d.error}</span>
+                          <span className="text-xs text-danger-ink">{d.error}</span>
                           <form action={retryMaterial.bind(null, d.id)}><SubmitButton pending="Retrying…" className="text-xs underline disabled:opacity-50">Retry</SubmitButton></form>
                         </>
                       )}
                     </div>
                     {d.summary && (
-                      <p className="text-gray-600"><AgentLabel name="Materials agent" /> {d.summary}</p>
+                      <p className="text-ink/70"><AgentLabel name="Materials agent" /> {d.summary}</p>
                     )}
-                    {!isStudent && d.status === "ready" && d.summary_status === "pending" && <p className="text-xs text-gray-500">Writing summary and announcement draft…</p>}
+                    {!isStudent && d.status === "ready" && d.summary_status === "pending" && <p className="text-xs text-ink/70">Writing summary and announcement draft…</p>}
                     {!isStudent && d.summary_status === "failed" && (
-                      <form action={retrySummary.bind(null, d.id)} className="text-xs text-red-600">
+                      <form action={retrySummary.bind(null, d.id)} className="text-xs text-danger-ink">
                         Summary failed (AI unavailable). <SubmitButton pending="Retrying…" className="underline disabled:opacity-50">Retry</SubmitButton>
                       </form>
                     )}
                     {draftFor.has(d.id) && <div className="pt-2"><ApprovalCard a={draftFor.get(d.id)!} inline /></div>}
                   </li>
                 ))}
-                {!docs.length && <li className="text-gray-500">No materials yet.</li>}
+                {!docs.length && <li className="text-ink/70">No materials yet.</li>}
               </ul>
               {c.professor_id === me.id && (
                 <div className="mt-3">
@@ -97,16 +97,16 @@ export default async function CoursesPage() {
                   .map((a) => (
                     <li key={a.id}>
                       <Link href={`/assignments/${a.id}`} className="underline">{a.title}</Link>
-                      <span className="text-gray-500"> · due <LocalTime iso={a.due_at} /></span>
+                      <span className="text-ink/70"> · due <LocalTime iso={a.due_at} /></span>
                     </li>
                   ))}
-                {!c.assignments.length && <li className="text-gray-500">No assignments yet.</li>}
+                {!c.assignments.length && <li className="text-ink/70">No assignments yet.</li>}
               </ul>
             </div>
           </section>
         );
       })}
-      {!courses?.length && <p className="text-sm text-gray-500">No courses.</p>}
+      {!courses?.length && <p className="text-sm text-ink/70">No courses.</p>}
     </div>
   );
 }

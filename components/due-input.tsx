@@ -12,7 +12,7 @@ export function DueInput({ name, defaultValue = "", required = true }: { name: s
   return (
     <>
       <input type="datetime-local" required={required} aria-label="Deadline" value={local} onChange={(e) => setLocal(e.target.value)}
-        className="w-full rounded-md border border-gray-300 px-3 py-2" />
+        className="field" />
       <input type="hidden" name={name} value={iso} />
     </>
   );

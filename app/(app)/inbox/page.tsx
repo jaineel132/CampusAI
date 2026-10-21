@@ -19,20 +19,20 @@ export default async function InboxPage() {
     <div className="max-w-3xl space-y-6">
       <div>
         <h1 className="text-xl font-semibold">Approval inbox</h1>
-        <p className="text-sm text-gray-500">Agents prepared these. Nothing is published or sent until you approve. You can also approve each one right where it happened.</p>
+        <p className="text-sm text-ink/70">Agents prepared these. Nothing is published or sent until you approve. You can also approve each one right where it happened.</p>
       </div>
 
       {(pending ?? []).map((a) => <ApprovalCard key={a.id} a={a} />)}
-      {!pending?.length && <p className="rounded-xl border border-gray-200 bg-white p-5 text-sm text-gray-500">Nothing waiting for you. 🎉</p>}
+      {!pending?.length && <p className="card p-5 text-sm text-ink/70">Nothing waiting for you. 🎉</p>}
 
       {!!decided?.length && (
-        <section className="rounded-xl border border-gray-200 bg-white">
-          <h2 className="border-b border-gray-200 p-4 font-medium">Recently decided</h2>
-          <ul className="divide-y divide-gray-100">
+        <section className="card">
+          <h2 className="border-b border-ink p-4 font-medium">Recently decided</h2>
+          <ul className="divide-y divide-ink/15">
             {decided.map((a) => (
               <li key={a.id} className="flex flex-wrap justify-between gap-2 p-4 text-sm">
                 <span>{approvalTitle[a.kind]} · {s((a.payload as P).title) || s((a.payload as P).assignment_title)}</span>
-                <span className={a.status === "approved" ? "text-green-700" : "text-gray-500"}>
+                <span className={a.status === "approved" ? "text-ok-ink" : "text-ink/70"}>
                   {a.status} {a.decided_at && <LocalTime iso={a.decided_at} />}
                 </span>
               </li>

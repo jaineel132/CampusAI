@@ -19,7 +19,7 @@ async function runNow() {
   revalidatePath("/", "layout");
 }
 
-const card = "rounded-xl border border-gray-200 bg-white p-5";
+const card = "card p-5";
 
 export default async function OpsPage() {
   const me = await getMe();
@@ -38,7 +38,7 @@ export default async function OpsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Ops digest</h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink/70">
             {run ? <>Generated <LocalTime iso={run.started_at} /> ({run.trigger === "schedule" ? "weekly schedule" : "on request"})</> : "No digest yet."}
           </p>
         </div>
@@ -46,7 +46,7 @@ export default async function OpsPage() {
       </div>
 
       {run?.status === "failed" && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <p role="alert" className="rounded-lg bg-danger/40 p-3 text-sm text-danger-ink">
           The AI summary failed ({run.error?.slice(0, 120)}). The figures below are still accurate. Try running it again.
         </p>
       )}
@@ -57,9 +57,9 @@ export default async function OpsPage() {
             <h2 className="font-medium">{d.headline}</h2>
             <AgentLabel name="Ops agent" />
           </div>
-          <p className="text-sm text-gray-700">{d.narrative}</p>
+          <p className="text-sm text-ink/85">{d.narrative}</p>
           {!!d.suggested_actions.length && (
-            <ul className="list-disc pl-5 text-sm text-gray-700">{d.suggested_actions.map((a) => <li key={a}>{a}</li>)}</ul>
+            <ul className="list-disc pl-5 text-sm text-ink/85">{d.suggested_actions.map((a) => <li key={a}>{a}</li>)}</ul>
           )}
         </section>
       )}
@@ -74,28 +74,28 @@ export default async function OpsPage() {
               {f.outstanding.map((o) => (
                 <li key={o.fee_id}>
                   {o.student} · {o.description} · <span className="font-medium">{money(o.balance, f.currency)}</span>
-                  <span className={o.overdue ? "text-red-600" : "text-gray-500"}> · {o.overdue ? "overdue" : "due"} {o.due_date}</span>
+                  <span className={o.overdue ? "text-danger-ink" : "text-ink/70"}> · {o.overdue ? "overdue" : "due"} {o.due_date}</span>
                 </li>
               ))}
-              {!f.outstanding.length && <li className="text-gray-500">All fees paid.</li>}
+              {!f.outstanding.length && <li className="text-ink/70">All fees paid.</li>}
             </ul>
           </section>
           <section className={card}>
             <h2 className="font-medium">Late or missing submissions (14 days)</h2>
             <ul className="mt-2 space-y-1 text-sm">
               {f.late.map((l, i) => (
-                <li key={i}>{l.student} · {l.course} {l.assignment} <span className={l.status === "missing" ? "text-red-600" : "text-amber-700"}>· {l.status}</span></li>
+                <li key={i}>{l.student} · {l.course} {l.assignment} <span className={l.status === "missing" ? "text-danger-ink" : "text-warn-ink"}>· {l.status}</span></li>
               ))}
-              {!f.late.length && <li className="text-gray-500">None.</li>}
+              {!f.late.length && <li className="text-ink/70">None.</li>}
             </ul>
           </section>
           <section className={`${card} md:col-span-2`}>
             <h2 className="font-medium">Professor ratings</h2>
             <ul className="mt-2 space-y-1 text-sm">
               {f.ratings.map((r) => (
-                <li key={r.course}>{r.course} · {r.professor} · <span className="font-medium">{r.average}/5</span> ({r.count}) <span className="text-gray-600">{r.overview}</span></li>
+                <li key={r.course}>{r.course} · {r.professor} · <span className="font-medium">{r.average}/5</span> ({r.count}) <span className="text-ink/70">{r.overview}</span></li>
               ))}
-              {!f.ratings.length && <li className="text-gray-500">No ratings yet.</li>}
+              {!f.ratings.length && <li className="text-ink/70">No ratings yet.</li>}
             </ul>
           </section>
         </div>
