@@ -155,6 +155,62 @@ ${text}
   });
 }
 
+// ───────── Assignment agent: professor uploads the assignment PDF → assignment draft for approval ─────────
+
+const assignmentSchema = z.object({
+  title: z.string().describe("Short assignment title"),
+  instructions: z.string().describe("The complete task for students as clear plain text. Keep every question, requirement, word limit and format rule; drop nothing"),
+  rubric: z.array(z.string()).min(1).max(8).describe("Marking criteria, one per item"),
+  rubric_in_document: z.boolean().describe("true if the document has any marking scheme, rubric, grading or marks breakdown section; false only if you had to build the rubric from the requirements"),
+  due_local: z.string().nullable().describe("Deadline as YYYY-MM-DDTHH:mm in the college's local time, only if the document states one. Date without a time → 23:59. Otherwise null"),
+  due_quote: z.string().nullable().describe("The document's exact deadline wording, under 20 words, or null"),
+});
+
+export async function assignmentAgent(runId: string, o: { institutionId: string; courseId: string; professorId: string; path: string; fileName: string }) {
+  const db = createServiceClient();
+  const { data: course } = await db.from("courses").select("code, name").eq("id", o.courseId).single();
+  let text = "";
+  try {
+    text = (await readPages("materials", o.path)).join("\n\n").trim().slice(0, MAX_CHARS);
+  } catch {}
+  if (!text) {
+    await db.from("agent_runs").update({ status: "failed", error: "No text found in this file (scanned PDFs are not supported).", finished_at: new Date().toISOString() }).eq("id", runId);
+    return;
+  }
+
+  const res = await runAgent({
+    runId,
+    agent: "assignment",
+    trigger: "event",
+    institutionId: o.institutionId,
+    userId: o.professorId,
+    input: { course_id: o.courseId, file_name: o.fileName },
+    instructions: `You are the Assignment agent at a college. A professor uploaded an assignment brief. Turn it into a structured assignment draft the professor will review.
+- Use only what is in the document. Never invent a deadline: if none is stated, due_local is null.
+- If the year is missing, use the next such date after today (${new Date().toISOString().slice(0, 10)}).
+- ${UNTRUSTED}`,
+    prompt: `Course: ${course?.code} ${course?.name}
+File: ${o.fileName}
+
+<document>
+${text}
+</document>`,
+    schema: assignmentSchema,
+  });
+  if (!res.ok) return;
+
+  const a = res.output;
+  await db.from("approvals").insert({
+    institution_id: o.institutionId, kind: "assignment_draft", reviewer_role: "professor", course_id: o.courseId, agent_run_id: runId,
+    payload: {
+      course_code: course?.code ?? "", file_path: o.path, file_name: o.fileName,
+      title: a.title, instructions: a.instructions, rubric: a.rubric, rubric_source: a.rubric_in_document ? "pdf" : "derived",
+      due_local: a.due_local && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(a.due_local) ? a.due_local : null, // anything else: professor sets it
+      due_quote: a.due_quote,
+    },
+  });
+}
+
 // ───────── Feedback agent: new rating → anonymous themes for the professor and admin ─────────
 
 export const themesSchema = z.object({

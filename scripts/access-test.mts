@@ -111,6 +111,15 @@ const { data: agg } = await mehta.from("rating_aggregates").select("*");
 assert.ok(agg?.length && !("student_id" in agg[0]), "professor sees only anonymous aggregates");
 console.log("✓ ratings rules passed");
 
+// Assignment briefs: an assignment can only point at a PDF in its own course's briefs folder.
+const os = aaravCourses.find((c) => c.code === "CS302")!;
+const { error: foreignBrief } = await mehta.from("assignments").insert({
+  institution_id: rating.institution_id, course_id: os.id, title: "x", instructions: "x", due_at: new Date(Date.now() + 864e5).toISOString(),
+  created_by: dbmsCourse!.professor_id, file_path: `${rating.institution_id}/${dbms.id}/briefs/other.pdf`,
+});
+assert.ok(foreignBrief, "an assignment cannot attach another course's file");
+console.log("✓ assignment brief paths scoped");
+
 // Leave demo data as it was: remove the test rating (no student delete policy exists, so use the service role).
 await createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
   .from("professor_ratings").delete().eq("student_id", aaravId).eq("course_id", dbms.id).eq("rating", 5).is("comment", null);

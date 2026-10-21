@@ -26,7 +26,7 @@ export async function decide(approvalId: string, _: string | null, form: FormDat
   if (decision === "rejected") return done();
 
   const payload = { ...(approval.payload as Payload) };
-  for (const key of ["title", "body", "feedback", "message"]) {
+  for (const key of ["title", "body", "feedback", "message", "instructions", "rubric", "due_at"]) {
     const v = form.get(key);
     if (typeof v === "string" && v.trim()) payload[key] = v.trim();
   }
@@ -100,6 +100,22 @@ async function apply(
       { onConflict: "user_id,ref", ignoreDuplicates: true }
     );
     return null;
+  }
+
+  if (kind === "assignment_draft") {
+    // Same rules as creating one by hand. RLS only lets the course's professor insert.
+    const title = String(p.title ?? "").trim();
+    const instructions = String(p.instructions ?? "").trim();
+    const rubric = (Array.isArray(p.rubric) ? p.rubric.map(String) : String(p.rubric ?? "").split("\n")).map((l) => l.trim()).filter(Boolean);
+    const due = new Date(String(p.due_at ?? ""));
+    if (!title || !instructions) return "Title and instructions are required.";
+    if (!rubric.length) return "Add at least one rubric item.";
+    if (isNaN(due.getTime()) || due.getTime() < Date.now()) return "Set a deadline in the future (under “Edit before approving”).";
+    const { error } = await db.from("assignments").insert({
+      institution_id: approval.institution_id, course_id: approval.course_id!, title, instructions, rubric,
+      due_at: due.toISOString(), created_by: reviewerId, file_path: String(p.file_path),
+    });
+    return error ? "Could not create the assignment." : null;
   }
 
   return `Approving "${kind}" is not supported yet.`;

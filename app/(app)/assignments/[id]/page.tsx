@@ -15,7 +15,7 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
   const db = await createClient();
   const { data: a } = await db
     .from("assignments")
-    .select("id, title, instructions, rubric, due_at, course:courses(code, name)")
+    .select("id, title, instructions, rubric, due_at, file_path, course:courses(code, name)")
     .eq("id", id)
     .maybeSingle();
   if (!a) notFound(); // not visible under RLS = doesn't exist for this user
@@ -42,6 +42,9 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
       </div>
 
       <section className="space-y-3 rounded-xl border border-gray-200 bg-white p-5">
+        {a.file_path && (
+          <p className="text-sm">📄 <a href={`/files/assignment/${a.id}`} target="_blank" className="underline">Original assignment PDF</a></p>
+        )}
         <p className="whitespace-pre-line text-sm">{a.instructions}</p>
         <div>
           <h2 className="text-sm font-medium">Rubric</h2>

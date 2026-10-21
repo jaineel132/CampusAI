@@ -15,6 +15,7 @@ type RunOptions<S extends z.ZodType> = {
   prompt: string;
   schema: S;
   tools?: ToolSet;
+  runId?: string; // a run row created earlier (so the page can show "working…" before the background job starts)
 };
 
 export type RunResult<T> = { ok: true; output: T; runId: string } | { ok: false; error: string; runId: string };
@@ -23,11 +24,13 @@ export type RunResult<T> = { ok: true; output: T; runId: string } | { ok: false;
 // Failures are recorded, never hidden, so the UI can show "failed — retry".
 export async function runAgent<S extends z.ZodType>(o: RunOptions<S>): Promise<RunResult<z.infer<S>>> {
   const db = createServiceClient();
-  const { data: run, error: logError } = await db
-    .from("agent_runs")
-    .insert({ institution_id: o.institutionId, agent: o.agent, trigger: o.trigger, user_id: o.userId, input: o.input })
-    .select("id")
-    .single();
+  const { data: run, error: logError } = o.runId
+    ? { data: { id: o.runId }, error: null }
+    : await db
+        .from("agent_runs")
+        .insert({ institution_id: o.institutionId, agent: o.agent, trigger: o.trigger, user_id: o.userId, input: o.input })
+        .select("id")
+        .single();
   if (logError) throw logError;
 
   try {

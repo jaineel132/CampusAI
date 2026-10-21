@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient, getMe } from "@/lib/supabase";
 import { safeName } from "@/lib/format";
-import { submissionAgent } from "@/lib/agents";
+import { assignmentAgent, submissionAgent } from "@/lib/agents";
 
 export async function createAssignment(_: string | null, form: FormData) {
   const me = await getMe();
@@ -29,6 +29,42 @@ export async function createAssignment(_: string | null, form: FormData) {
     .single();
   if (error) return "Could not create the assignment for that course.";
   redirect(`/assignments/${data.id}`);
+}
+
+const briefPrefix = (inst: string, courseId: string) => `${inst}/${courseId}/briefs/`;
+
+// Assignment PDF, step 1: only the course's professor gets a one-time upload URL.
+export async function startBrief(courseId: string, fileName: string) {
+  const me = await getMe();
+  const db = await createClient();
+  const { data: course } = await db.from("courses").select("id").eq("id", courseId).eq("professor_id", me.id).maybeSingle();
+  if (!course) return { error: "You can only add assignments to courses you teach." };
+  const path = briefPrefix(me.institution.id, course.id) + `${crypto.randomUUID()}-${safeName(fileName)}`;
+  const { data, error } = await createServiceClient().storage.from("materials").createSignedUploadUrl(path);
+  if (error) return { error: "Could not start the upload." };
+  return { bucket: "materials", path, token: data.token };
+}
+
+// Step 2: confirm the file landed, log the run now (so the page shows "reading…"), draft in the background.
+export async function finishBrief(courseId: string, path: string, fileName: string) {
+  const me = await getMe();
+  if (!path.startsWith(briefPrefix(me.institution.id, courseId)) || path.includes("..")) return { error: "Invalid upload." };
+  const db = await createClient();
+  const { data: course } = await db.from("courses").select("id").eq("id", courseId).eq("professor_id", me.id).maybeSingle();
+  if (!course) return { error: "You can only add assignments to courses you teach." };
+
+  const service = createServiceClient();
+  const { error: missing } = await service.storage.from("materials").info(path);
+  if (missing) return { error: "Upload not found. Try again." };
+  const input = { course_id: course.id, file_name: fileName.slice(0, 200) };
+  const { data: run } = await service.from("agent_runs")
+    .insert({ institution_id: me.institution.id, agent: "assignment", trigger: "event", user_id: me.id, input })
+    .select("id").single();
+  if (!run) return { error: "Could not start the Assignment agent." };
+
+  after(() => assignmentAgent(run.id, { institutionId: me.institution.id, courseId: course.id, professorId: me.id, path, fileName: input.file_name }));
+  revalidatePath("/assignments");
+  return {};
 }
 
 const pathPrefix = (inst: string, assignmentId: string, studentId: string) => `${inst}/${assignmentId}/${studentId}/`;

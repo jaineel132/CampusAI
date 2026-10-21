@@ -109,14 +109,14 @@ isOneToOne: false
                   ]
                 },"assignments": {
                   Row: {
-                    "course_id": string,"created_at": string,"created_by": string,"due_at": string,"id": string,"institution_id": string,"instructions": string,"rubric": NonNullable<Json>,"title": string
+                    "course_id": string,"created_at": string,"created_by": string,"due_at": string,"file_path": string | null,"id": string,"institution_id": string,"instructions": string,"rubric": NonNullable<Json>,"title": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "course_id": string,"created_at"?: string,"created_by": string,"due_at": string,"id"?: string,"institution_id": string,"instructions": string,"rubric"?: NonNullable<Json>,"title": string
+                    "course_id": string,"created_at"?: string,"created_by": string,"due_at": string,"file_path"?: string | null,"id"?: string,"institution_id": string,"instructions": string,"rubric"?: NonNullable<Json>,"title": string
                   }
                   Update: {
-                    "course_id"?: string,"created_at"?: string,"created_by"?: string,"due_at"?: string,"id"?: string,"institution_id"?: string,"instructions"?: string,"rubric"?: NonNullable<Json>,"title"?: string
+                    "course_id"?: string,"created_at"?: string,"created_by"?: string,"due_at"?: string,"file_path"?: string | null,"id"?: string,"institution_id"?: string,"instructions"?: string,"rubric"?: NonNullable<Json>,"title"?: string
                   }
                   Relationships: [
                     {

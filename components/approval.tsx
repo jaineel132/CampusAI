@@ -2,17 +2,19 @@ import { LocalTime } from "@/components/local-time";
 import { AgentLabel } from "@/components/precheck";
 import type { Precheck } from "@/lib/agents";
 import { money } from "@/lib/format";
-import { ApprovalActions } from "@/app/(app)/inbox/approval-card";
+import { ApprovalActions, type EditableField } from "@/app/(app)/inbox/approval-card";
 
 const agentFor: Record<string, string> = {
   feedback_draft: "Submission agent",
   announcement: "Materials agent",
   reminder_batch: "Ops agent",
+  assignment_draft: "Assignment agent",
 };
 export const approvalTitle: Record<string, string> = {
   feedback_draft: "Feedback draft",
   announcement: "Announcement draft",
   reminder_batch: "Fee reminder batch",
+  assignment_draft: "Assignment draft",
 };
 
 type P = Record<string, unknown>;
@@ -23,6 +25,7 @@ export type PendingApproval = { id: string; kind: string; payload: unknown; crea
 // `inline` drops the context the surrounding page already shows (course, file, student).
 export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline?: boolean }) {
   const p = a.payload as P;
+  const rubric = Array.isArray(p.rubric) ? (p.rubric as string[]) : [];
   return (
     <section className={`space-y-3 rounded-xl border p-5 ${inline ? "border-violet-200 bg-violet-50/40" : "border-gray-200 bg-white"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -91,16 +94,41 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
         </>
       )}
 
-      <ApprovalActions
-        id={a.id}
-        editable={
-          a.kind === "announcement"
-            ? [{ name: "title", label: "Title", value: s(p.title) }, { name: "body", label: "Message", value: s(p.body), rows: 4 }]
-            : a.kind === "feedback_draft"
-              ? [{ name: "feedback", label: "Feedback", value: s(p.feedback), rows: 6 }]
-              : [{ name: "message", label: "Message", value: s(p.message), rows: 3 }]
-        }
-      />
+      {a.kind === "assignment_draft" && (
+        <>
+          <p className="text-xs text-gray-500">From {s(p.file_name)}. Students will also see the original PDF.</p>
+          <div className="space-y-2 rounded-lg bg-gray-50 p-3 text-sm">
+            <p className="font-medium">{s(p.title)}</p>
+            <p className="max-h-48 overflow-y-auto whitespace-pre-line text-gray-700">{s(p.instructions)}</p>
+            <div>
+              <p className="text-xs text-gray-500">
+                Rubric {p.rubric_source === "derived" ? "(the PDF has none, so the agent built it from the requirements; please check)" : "(from the PDF)"}
+              </p>
+              <ul className="list-disc pl-5">{rubric.map((r) => <li key={r}>{r}</li>)}</ul>
+            </div>
+            {p.due_local ? (
+              <p>Deadline: <span className="font-medium">{s(p.due_local).replace("T", " ")}</span>{p.due_quote ? <span className="text-gray-500"> (PDF says “{s(p.due_quote)}”)</span> : null}</p>
+            ) : (
+              <p className="text-amber-700">No deadline found in the PDF. Set one below before approving.</p>
+            )}
+          </div>
+        </>
+      )}
+
+      <ApprovalActions id={a.id} editable={editableFor(a.kind, p, rubric)} open={a.kind === "assignment_draft" && !p.due_local} />
     </section>
   );
+}
+
+function editableFor(kind: string, p: P, rubric: string[]): EditableField[] {
+  if (kind === "announcement") return [{ name: "title", label: "Title", value: s(p.title) }, { name: "body", label: "Message", value: s(p.body), rows: 4 }];
+  if (kind === "feedback_draft") return [{ name: "feedback", label: "Feedback", value: s(p.feedback), rows: 6 }];
+  if (kind === "assignment_draft")
+    return [
+      { name: "title", label: "Title", value: s(p.title) },
+      { name: "instructions", label: "Instructions", value: s(p.instructions), rows: 8 },
+      { name: "rubric", label: "Rubric (one item per line)", value: rubric.join("\n"), rows: 5 },
+      { name: "due_at", label: "Deadline", value: s(p.due_local), due: true },
+    ];
+  return [{ name: "message", label: "Message", value: s(p.message), rows: 3 }];
 }
