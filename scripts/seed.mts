@@ -28,6 +28,7 @@ const users = [
 ] as const;
 
 async function wipe() {
+  for (const bucket of ["materials", "submissions"]) await db.storage.emptyBucket(bucket);
   await must(db.from("institutions").delete().in("slug", ["northfield", "lakeside"]));
   const { data } = await db.auth.admin.listUsers({ perPage: 1000 });
   const demoEmails = new Set<string>(users.map((u) => u.email));

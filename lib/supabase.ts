@@ -4,11 +4,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import type { Database } from "./database.types";
 
 // Acts as the logged-in user: every query goes through RLS.
 export async function createClient() {
   const cookieStore = await cookies();
-  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+  return createServerClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (list) => {
@@ -24,7 +25,7 @@ export async function createClient() {
 
 // Bypasses RLS. Only for webhooks, cron and background agent jobs.
 export function createServiceClient() {
-  return createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  return createAdminClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false },
   });
 }

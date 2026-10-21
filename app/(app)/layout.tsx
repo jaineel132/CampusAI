@@ -4,9 +4,21 @@ import { signOut } from "@/app/actions";
 
 // Add a link here when its page exists (PRD: no button that does nothing).
 const nav: Record<Role, { href: string; label: string }[]> = {
-  student: [{ href: "/dashboard", label: "Dashboard" }],
-  professor: [{ href: "/dashboard", label: "Dashboard" }],
-  admin: [{ href: "/dashboard", label: "Dashboard" }],
+  student: [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/courses", label: "Courses" },
+    { href: "/assignments", label: "Assignments" },
+    { href: "/fees", label: "Fees & payments" },
+  ],
+  professor: [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/courses", label: "My courses" },
+    { href: "/assignments", label: "Assignments & submissions" },
+  ],
+  admin: [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/fees", label: "Fees overview" },
+  ],
 };
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
