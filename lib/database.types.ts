@@ -199,14 +199,14 @@ isOneToOne: false
                   ]
                 },"documents": {
                   Row: {
-                    "course_id": string | null,"created_at": string,"error": string | null,"file_path": string,"id": string,"institution_id": string,"page_count": number | null,"status": string,"summary": string | null,"title": string,"uploaded_by": string
+                    "course_id": string | null,"created_at": string,"error": string | null,"file_path": string,"id": string,"institution_id": string,"page_count": number | null,"status": string,"summary": string | null,"summary_status": string,"title": string,"uploaded_by": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "course_id"?: string | null,"created_at"?: string,"error"?: string | null,"file_path": string,"id"?: string,"institution_id": string,"page_count"?: number | null,"status"?: string,"summary"?: string | null,"title": string,"uploaded_by": string
+                    "course_id"?: string | null,"created_at"?: string,"error"?: string | null,"file_path": string,"id"?: string,"institution_id": string,"page_count"?: number | null,"status"?: string,"summary"?: string | null,"summary_status"?: string,"title": string,"uploaded_by": string
                   }
                   Update: {
-                    "course_id"?: string | null,"created_at"?: string,"error"?: string | null,"file_path"?: string,"id"?: string,"institution_id"?: string,"page_count"?: number | null,"status"?: string,"summary"?: string | null,"title"?: string,"uploaded_by"?: string
+                    "course_id"?: string | null,"created_at"?: string,"error"?: string | null,"file_path"?: string,"id"?: string,"institution_id"?: string,"page_count"?: number | null,"status"?: string,"summary"?: string | null,"summary_status"?: string,"title"?: string,"uploaded_by"?: string
                   }
                   Relationships: [
                     {
@@ -457,14 +457,14 @@ isOneToOne: false
                   ]
                 },"submissions": {
                   Row: {
-                    "assignment_id": string,"file_name": string,"file_path": string,"id": string,"institution_id": string,"is_late": boolean,"precheck": string | null,"precheck_status": string,"student_id": string,"submitted_at": string
+                    "assignment_id": string,"feedback": string | null,"feedback_released_at": string | null,"file_name": string,"file_path": string,"id": string,"institution_id": string,"is_late": boolean,"precheck": Json | null,"precheck_status": string,"student_id": string,"submitted_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "assignment_id": string,"file_name": string,"file_path": string,"id"?: string,"institution_id": string,"is_late"?: boolean,"precheck"?: string | null,"precheck_status"?: string,"student_id": string,"submitted_at"?: string
+                    "assignment_id": string,"feedback"?: string | null,"feedback_released_at"?: string | null,"file_name": string,"file_path": string,"id"?: string,"institution_id": string,"is_late"?: boolean,"precheck"?: Json | null,"precheck_status"?: string,"student_id": string,"submitted_at"?: string
                   }
                   Update: {
-                    "assignment_id"?: string,"file_name"?: string,"file_path"?: string,"id"?: string,"institution_id"?: string,"is_late"?: boolean,"precheck"?: string | null,"precheck_status"?: string,"student_id"?: string,"submitted_at"?: string
+                    "assignment_id"?: string,"feedback"?: string | null,"feedback_released_at"?: string | null,"file_name"?: string,"file_path"?: string,"id"?: string,"institution_id"?: string,"is_late"?: boolean,"precheck"?: Json | null,"precheck_status"?: string,"student_id"?: string,"submitted_at"?: string
                   }
                   Relationships: [
                     {

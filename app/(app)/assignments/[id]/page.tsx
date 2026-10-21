@@ -3,7 +3,10 @@ import { createClient, getMe } from "@/lib/supabase";
 import { relative } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
 import { FileUpload } from "@/components/file-upload";
-import { finishSubmission, startSubmission } from "../actions";
+import { AutoRefresh } from "@/components/auto-refresh";
+import { PrecheckCard } from "@/components/precheck";
+import type { Precheck } from "@/lib/agents";
+import { finishSubmission, retryPrecheck, startSubmission } from "../actions";
 
 export default async function AssignmentPage(props: PageProps<"/assignments/[id]">) {
   const { id } = await props.params;
@@ -19,13 +22,15 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
   // RLS: a student gets only their own row; a professor gets every submission for their course.
   const { data: submissions } = await db
     .from("submissions")
-    .select("id, file_name, submitted_at, is_late, student:profiles(full_name)")
+    .select("id, file_name, submitted_at, is_late, precheck, precheck_status, feedback, feedback_released_at, student:profiles(full_name)")
     .eq("assignment_id", a.id)
     .order("submitted_at", { ascending: false });
   const mine = me.role === "student" ? submissions?.[0] : undefined;
+  const pending = (submissions ?? []).some((s) => s.precheck_status === "pending");
 
   return (
     <div className="max-w-3xl space-y-6">
+      <AutoRefresh active={pending} />
       <div>
         <p className="text-sm text-gray-500">{a.course?.code} · {a.course?.name}</p>
         <h1 className="text-xl font-semibold">{a.title}</h1>
@@ -54,6 +59,15 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
           ) : (
             <p className="text-sm text-gray-500">Nothing submitted yet. PDF or TXT, up to 10 MB.</p>
           )}
+          {mine && (
+            <PrecheckCard status={mine.precheck_status} precheck={mine.precheck as Precheck | null} retry={retryPrecheck.bind(null, mine.id)} />
+          )}
+          {mine?.feedback_released_at && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
+              <p className="font-medium">Feedback from your professor</p>
+              <p className="mt-1 whitespace-pre-line">{mine.feedback}</p>
+            </div>
+          )}
           <FileUpload
             label={mine ? "Replace submission" : "Submit"}
             start={startSubmission.bind(null, a.id)}
@@ -67,13 +81,20 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
           <h2 className="border-b border-gray-200 p-4 font-medium">Submissions ({submissions?.length ?? 0})</h2>
           <ul className="divide-y divide-gray-200">
             {(submissions ?? []).map((s) => (
-              <li key={s.id} className="flex flex-wrap justify-between gap-2 p-4 text-sm">
-                <span>{s.student?.full_name}</span>
-                <span className="text-gray-600">
-                  <a href={`/files/submission/${s.id}`} target="_blank" className="underline">{s.file_name}</a>
-                  {" · "}<LocalTime iso={s.submitted_at} />
-                  {s.is_late && <span className="text-red-600"> · late</span>}
-                </span>
+              <li key={s.id} className="space-y-1 p-4 text-sm">
+                <div className="flex flex-wrap justify-between gap-2">
+                  <span className="font-medium">{s.student?.full_name}</span>
+                  <span className="text-gray-600">
+                    <a href={`/files/submission/${s.id}`} target="_blank" className="underline">{s.file_name}</a>
+                    {" · "}<LocalTime iso={s.submitted_at} />
+                    {s.is_late && <span className="text-red-600"> · late</span>}
+                  </span>
+                </div>
+                <p className="text-gray-600">
+                  Pre-check: {s.precheck_status === "done" ? (s.precheck as Precheck | null)?.summary : s.precheck_status}
+                  {" · "}
+                  {s.feedback_released_at ? "feedback sent" : <a href="/inbox" className="underline">feedback draft in inbox</a>}
+                </p>
               </li>
             ))}
             {!submissions?.length && <li className="p-4 text-sm text-gray-500">No submissions yet.</li>}

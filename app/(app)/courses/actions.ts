@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient, getMe } from "@/lib/supabase";
 import { safeName } from "@/lib/format";
 import { ingestDocument } from "@/lib/ingest";
+import { materialsAgent } from "@/lib/agents";
 
 const pathPrefix = (inst: string, courseId: string) => `${inst}/${courseId}/`;
 
@@ -49,5 +50,14 @@ export async function retryMaterial(documentId: string) {
   const { data: doc } = await db.from("documents").select("id, course_id").eq("id", documentId).maybeSingle();
   if (!doc?.course_id || !(await db.rpc("teaches", { course: doc.course_id })).data) return;
   after(() => ingestDocument(doc.id));
+  revalidatePath("/courses");
+}
+
+export async function retrySummary(documentId: string) {
+  await getMe();
+  const db = await createClient();
+  const { data: doc } = await db.from("documents").select("id, course_id").eq("id", documentId).eq("status", "ready").maybeSingle();
+  if (!doc?.course_id || !(await db.rpc("teaches", { course: doc.course_id })).data) return;
+  after(() => materialsAgent(doc.id));
   revalidatePath("/courses");
 }

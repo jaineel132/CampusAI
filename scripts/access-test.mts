@@ -26,6 +26,7 @@ const mehta = await as("prof.mehta@northfield.demo");
 const anon = createClient(url, anonKey, { auth: { persistSession: false } });
 
 const aaravId = (await aarav.auth.getUser()).data.user!.id;
+const aaravCourses = await (async () => { const { data } = await aarav.from("courses").select("id, code"); return data ?? []; })();
 
 // Student B (Diya) cannot see Student A's (Aarav's) fees or submissions
 const diyaFees = await rows(diya, "fee_records");
@@ -77,3 +78,17 @@ if (aaravHits.length) {
 } else {
   console.log("· RAG scope skipped: upload a DBMS document first");
 }
+
+// Announcements reach only their audience: course posts never reach students outside the course or college.
+const courseAnns = (await rows(aarav, "announcements")).filter((a) => a.course_id);
+if (courseAnns.length) {
+  const ids = new Set(courseAnns.filter((a) => a.course_id === aaravCourses.find((c) => c.code === "CS301")?.id).map((a) => a.id));
+  assert.ok((await rows(diya, "announcements")).every((a) => !ids.has(a.id)), "Diya sees no DBMS announcements");
+  assert.equal((await rows(jordan, "announcements")).length, 0, "Jordan sees no college A announcements");
+  console.log(`✓ announcement audience passed (${ids.size} DBMS announcement(s) hidden from Diya and Jordan)`);
+}
+
+// Approvals and agent runs stay with their reviewers
+assert.equal((await rows(aarav, "approvals")).length, 0, "students never see the approval inbox");
+assert.ok((await rows(diya, "agent_runs")).every((r) => r.user_id !== aaravId), "no one sees another student's agent runs");
+console.log("✓ approvals + agent runs scoped");

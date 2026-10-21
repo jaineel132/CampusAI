@@ -1,9 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient, getMe } from "@/lib/supabase";
 import { safeName } from "@/lib/format";
+import { submissionAgent } from "@/lib/agents";
 
 export async function createAssignment(_: string | null, form: FormData) {
   const me = await getMe();
@@ -55,24 +57,37 @@ export async function finishSubmission(assignmentId: string, path: string, fileN
   const { data: a } = await db.from("assignments").select("id, due_at").eq("id", assignmentId).maybeSingle();
   if (!a) return { error: "Assignment not found." };
 
-  const storage = createServiceClient().storage.from("submissions");
+  const service = createServiceClient(); // checks above passed; RLS has no student write policy
+  const storage = service.storage.from("submissions");
   const { error: missing } = await storage.info(path); // bucket already enforced type + size
   if (missing) return { error: "Upload not found. Try again." };
 
   const { data: previous } = await db.from("submissions").select("file_path").eq("assignment_id", a.id).eq("student_id", me.id).maybeSingle();
-  const { error } = await db.from("submissions").upsert(
+  const { data: saved, error } = await service.from("submissions").upsert(
     {
       institution_id: me.institution.id, assignment_id: a.id, student_id: me.id, file_path: path, file_name: fileName.slice(0, 200),
-      is_late: Date.now() > new Date(a.due_at).getTime(), precheck: null, precheck_status: "pending", submitted_at: new Date().toISOString(),
+      is_late: Date.now() > new Date(a.due_at).getTime(), precheck: null, precheck_status: "pending", feedback: null, feedback_released_at: null, submitted_at: new Date().toISOString(),
     },
     { onConflict: "assignment_id,student_id" }
-  );
+  ).select("id").single();
   if (error) {
     await storage.remove([path]);
     return { error: "Could not save the submission." };
   }
   if (previous && previous.file_path !== path) await storage.remove([previous.file_path]);
 
+  after(() => submissionAgent(saved.id));
+
   revalidatePath(`/assignments/${a.id}`);
   return {};
+}
+
+// Re-run a failed pre-check (AI provider down, quota hit).
+export async function retryPrecheck(submissionId: string) {
+  const me = await getMe();
+  const db = await createClient();
+  const { data: s } = await db.from("submissions").select("id, assignment_id").eq("id", submissionId).eq("student_id", me.id).maybeSingle();
+  if (!s) return;
+  after(() => submissionAgent(s.id));
+  revalidatePath(`/assignments/${s.assignment_id}`);
 }

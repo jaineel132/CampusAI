@@ -4,7 +4,8 @@ import { plural } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
 import { FileUpload } from "@/components/file-upload";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { finishMaterial, retryMaterial, startMaterial } from "./actions";
+import { AgentLabel } from "@/components/precheck";
+import { finishMaterial, retryMaterial, retrySummary, startMaterial } from "./actions";
 
 const docStatus: Record<string, string> = {
   uploaded: "bg-gray-100 text-gray-700",
@@ -20,12 +21,14 @@ export default async function CoursesPage() {
   const { data: courses } = await db
     .from("courses")
     .select(
-      "id, code, name, term, professor_id, professor:profiles(full_name), enrollments(count), assignments(id, title, due_at), documents(id, title, status, error, page_count, created_at)"
+      "id, code, name, term, professor_id, professor:profiles(full_name), enrollments(count), assignments(id, title, due_at), documents(id, title, status, error, page_count, created_at, summary, summary_status)"
     )
     .order("code");
 
   const isStudent = me.role === "student";
-  const processing = (courses ?? []).some((c) => c.documents.some((d) => d.status === "uploaded" || d.status === "processing"));
+  const processing = (courses ?? []).some((c) =>
+    c.documents.some((d) => d.status === "uploaded" || d.status === "processing" || (d.status === "ready" && d.summary_status === "pending"))
+  );
 
   return (
     <div className="max-w-3xl space-y-4">
@@ -48,15 +51,26 @@ export default async function CoursesPage() {
               <h3 className="text-sm font-medium">Materials</h3>
               <ul className="mt-1 space-y-1 text-sm">
                 {docs.map((d) => (
-                  <li key={d.id} className="flex flex-wrap items-center gap-2">
-                    <a href={`/files/document/${d.id}`} target="_blank" className="underline">{d.title}</a>
-                    {d.page_count && <span className="text-gray-500">· {plural(d.page_count, "page")}</span>}
-                    {!isStudent && <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${docStatus[d.status]}`}>{d.status}</span>}
-                    {!isStudent && d.status === "failed" && (
-                      <>
-                        <span className="text-xs text-red-600">{d.error}</span>
-                        <form action={retryMaterial.bind(null, d.id)}><button className="text-xs underline">Retry</button></form>
-                      </>
+                  <li key={d.id} className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <a href={`/files/document/${d.id}`} target="_blank" className="underline">{d.title}</a>
+                      {d.page_count && <span className="text-gray-500">· {plural(d.page_count, "page")}</span>}
+                      {!isStudent && <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${docStatus[d.status]}`}>{d.status}</span>}
+                      {!isStudent && d.status === "failed" && (
+                        <>
+                          <span className="text-xs text-red-600">{d.error}</span>
+                          <form action={retryMaterial.bind(null, d.id)}><button className="text-xs underline">Retry</button></form>
+                        </>
+                      )}
+                    </div>
+                    {d.summary && (
+                      <p className="text-gray-600"><AgentLabel name="Materials agent" /> {d.summary}</p>
+                    )}
+                    {!isStudent && d.status === "ready" && d.summary_status === "pending" && <p className="text-xs text-gray-500">Writing summary and announcement draft…</p>}
+                    {!isStudent && d.summary_status === "failed" && (
+                      <form action={retrySummary.bind(null, d.id)} className="text-xs text-red-600">
+                        Summary failed (AI unavailable). <button className="underline">Retry</button>
+                      </form>
                     )}
                   </li>
                 ))}
