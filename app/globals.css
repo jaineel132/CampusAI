@@ -1,10 +1,68 @@
 @import "tailwindcss";
 
+/* Neo-brutalism: cream paper, black ink, flat bright accents, hard shadows. */
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-grotesk);
   --font-mono: var(--font-geist-mono);
 }
 
+@theme {
+  --color-cream: #fff8e7;
+  --color-ink: #111111;
+  --color-yellow: #ffd23f;
+  --color-pink: #ff6b9d;
+  --color-mint: #7be0ad;
+  --color-sky: #74b9ff;
+  --color-danger: #ff5a5f;
+  /* Text-safe shades (the bright accents are for fills only). */
+  --color-danger-ink: #b3141a;
+  --color-ok-ink: #0b6e3c;
+  --color-warn-ink: #8a5200;
+  --shadow-brutal: 4px 4px 0 var(--color-ink);
+  --shadow-brutal-sm: 2px 2px 0 var(--color-ink);
+}
+
 body {
-  @apply bg-gray-50 text-gray-900 font-sans;
+  @apply bg-cream text-ink font-sans;
+}
+
+@utility card {
+  @apply rounded-md border-2 border-ink bg-white shadow-brutal;
+}
+/* A card that is a link: lifts on hover, presses on click. */
+@utility card-link {
+  @apply card transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_var(--color-ink)] active:translate-x-1 active:translate-y-1 active:shadow-none;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1 rounded-md border-2 border-ink bg-yellow px-4 py-2 text-sm font-bold shadow-brutal-sm transition-transform
+    hover:-translate-x-px hover:-translate-y-px hover:shadow-brutal active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+    disabled:pointer-events-none disabled:opacity-50;
+}
+@utility btn-ghost {
+  @apply btn bg-white;
+}
+@utility btn-sm {
+  @apply px-3 py-1 text-xs;
+}
+@utility field {
+  @apply w-full rounded-md border-2 border-ink bg-white px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-yellow;
+}
+@utility badge {
+  @apply inline-block rounded-full border-2 border-ink px-2 py-0.5 text-xs font-bold;
+}
+/* "Prepared by X agent": the product's story, so it looks like a sticker. */
+@utility sticker {
+  @apply inline-flex items-center gap-1 rounded-md border-2 border-ink bg-pink px-2 py-0.5 text-xs font-bold uppercase tracking-wide shadow-brutal-sm;
+}
+@utility link {
+  @apply font-medium underline decoration-2 underline-offset-2 hover:bg-yellow;
+}
+@utility muted {
+  @apply text-ink/70;
+}
+@utility heading {
+  @apply text-2xl font-bold tracking-tight;
+}
+@utility section-title {
+  @apply font-bold;
 }

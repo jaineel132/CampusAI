@@ -1,8 +1,10 @@
-import Link from "next/link";
 import { createClient, getMe, type Role } from "@/lib/supabase";
 import { signOut } from "@/app/actions";
 import { Assistant } from "@/components/assistant";
 import { SubmitButton } from "@/components/submit-button";
+import { NavLink } from "@/components/nav-link";
+
+const roleColour: Record<Role, string> = { student: "bg-yellow", professor: "bg-pink", admin: "bg-mint" };
 
 // Add a link here when its page exists (PRD: no button that does nothing).
 const nav: Record<Role, { href: string; label: string }[]> = {
@@ -39,26 +41,26 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     : await (await createClient()).from("approvals").select("id", { count: "exact", head: true }).eq("status", "pending");
   return (
     <div className="flex flex-1 flex-col md:flex-row">
-      <aside className="border-b border-gray-200 bg-white p-4 md:w-56 md:border-r md:border-b-0">
-        <p className="font-semibold">CampusOS</p>
-        <p className="text-xs text-gray-500">{me.institution.name}</p>
-        <nav className="mt-4 flex flex-wrap gap-2 md:flex-col">
+      <aside className="border-b-2 border-ink bg-cream p-4 md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:overflow-y-auto md:border-r-2 md:border-b-0">
+        <p className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-2 py-0.5 text-xl font-bold tracking-tight shadow-brutal-sm">CampusOS</p>
+        <p className="mt-2 text-xs font-medium muted">{me.institution.name}</p>
+        <nav className="mt-5 flex flex-wrap gap-1.5 md:flex-col">
           {nav[me.role].map((l) => (
-            <Link key={l.href} href={l.href} className="rounded-md px-2 py-1 text-sm hover:bg-gray-100">
+            <NavLink key={l.href} href={l.href} active={roleColour[me.role]}>
               {l.label}
-              {l.href === "/inbox" && !!inbox && <span className="ml-1 rounded-full bg-violet-600 px-1.5 text-xs text-white">{inbox}</span>}
-            </Link>
+              {l.href === "/inbox" && !!inbox && <span className="badge bg-pink">{inbox}</span>}
+            </NavLink>
           ))}
         </nav>
-        <div className="mt-4 text-sm md:mt-8">
-          <p>{me.full_name}</p>
-          <p className="text-xs capitalize text-gray-500">{me.role}</p>
+        <div className="card mt-5 p-3 text-sm md:mt-8">
+          <p className="font-bold">{me.full_name}</p>
+          <span className={`badge mt-1 capitalize ${roleColour[me.role]}`}>{me.role}</span>
           <form action={signOut}>
-            <SubmitButton pending="Signing out…" className="mt-2 text-xs text-gray-500 underline">Sign out</SubmitButton>
+            <SubmitButton pending="Signing out…" className="btn-ghost btn-sm mt-3 w-full">Sign out</SubmitButton>
           </form>
         </div>
       </aside>
-      <main className="flex-1 p-4 pb-20 md:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 pb-24 md:p-8">{children}</main>
       <Assistant role={me.role} />
     </div>
   );

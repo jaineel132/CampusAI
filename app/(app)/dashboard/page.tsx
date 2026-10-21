@@ -10,7 +10,7 @@ import { refreshPlan } from "./actions";
 import { LocalTime } from "@/components/local-time";
 import { StatusBadge } from "@/components/status-badge";
 
-const card = "rounded-xl border border-gray-200 bg-white p-5";
+const card = "card p-5";
 
 export default async function Dashboard() {
   const me = await getMe();
@@ -18,8 +18,8 @@ export default async function Dashboard() {
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">Welcome, {me.role === "student" ? me.full_name.split(" ")[0] : me.full_name}</h1>
-        <p className="text-sm text-gray-500">{i.name} · {i.current_term}</p>
+        <h1 className="heading">Welcome, {me.role === "student" ? me.full_name.split(" ")[0] : me.full_name}</h1>
+        <p className="text-sm text-ink/70">{i.name} · {i.current_term}</p>
       </div>
       {me.role === "student" && <StudentDashboard me={me} />}
       {me.role === "professor" && <ProfessorDashboard me={me} />}
@@ -46,34 +46,34 @@ async function StudentDashboard({ me }: { me: Me }) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <WeekPlan me={me} />
-      <Link href="/fees" className={`${card} hover:bg-gray-50`}>
-        <h2 className="font-medium">Fee balance</h2>
-        <p className="mt-2 text-2xl font-semibold">{money(balance, me.institution.currency)}</p>
-        <p className="text-xs text-gray-500">{fees?.[0] ? `Next due ${fees[0].due_date}` : "All paid"}</p>
+      <Link href="/fees" className={`card-link self-start p-5 ${balance > 0 ? "bg-yellow" : "bg-mint"}`}>
+        <h2 className="section-title">Fee balance</h2>
+        <p className="mt-2 text-3xl font-bold">{money(balance, me.institution.currency)}</p>
+        <p className="text-xs text-ink/70">{fees?.[0] ? `Next due ${fees[0].due_date}` : "All paid"}</p>
       </Link>
 
       <section className={`${card} md:col-span-2`}>
-        <h2 className="font-medium">Upcoming deadlines</h2>
-        <ul className="mt-3 divide-y divide-gray-100">
+        <h2 className="section-title">Upcoming deadlines</h2>
+        <ul className="mt-3 divide-y divide-ink/15">
           {deadlines.map((a) => (
             <li key={a.id}>
               <Link href={`/assignments/${a.id}`} className="flex items-center justify-between gap-2 py-2 text-sm hover:underline">
-                <span>{a.course?.code} · {a.title} <span className="text-gray-500">({relative(a.due_at)})</span></span>
+                <span>{a.course?.code} · {a.title} <span className="text-ink/70">({relative(a.due_at)})</span></span>
                 <StatusBadge submitted={done.has(a.id)} late={done.get(a.id)?.is_late} overdue={isPast(a.due_at)} />
               </Link>
             </li>
           ))}
-          {!deadlines.length && <li className="py-2 text-sm text-gray-500">Nothing due. 🎉</li>}
+          {!deadlines.length && <li className="py-2 text-sm text-ink/70">Nothing due. 🎉</li>}
         </ul>
       </section>
 
       <ActivityFeed me={me} />
 
       <section className={`${card} md:col-span-3`}>
-        <h2 className="font-medium">My courses</h2>
+        <h2 className="section-title">My courses</h2>
         <ul className="mt-2 grid gap-2 sm:grid-cols-2">
           {(courses ?? []).map((c) => (
-            <li key={c.id} className="text-sm">{c.code} — {c.name} <span className="text-gray-500">· {c.professor?.full_name}</span></li>
+            <li key={c.id} className="text-sm">{c.code} — {c.name} <span className="text-ink/70">· {c.professor?.full_name}</span></li>
           ))}
         </ul>
       </section>
@@ -81,7 +81,7 @@ async function StudentDashboard({ me }: { me: Me }) {
   );
 }
 
-const dot = { high: "bg-red-500", medium: "bg-amber-500", low: "bg-gray-400" } as const;
+const tone = { high: "bg-danger", medium: "bg-yellow", low: "bg-white" } as const;
 
 // Planner agent on dashboard load: reuse a plan younger than 12 h, otherwise prepare a new one in the background.
 async function WeekPlan({ me }: { me: Me }) {
@@ -103,21 +103,21 @@ async function WeekPlan({ me }: { me: Me }) {
     <section className={`${card} space-y-3 md:col-span-2`}>
       <AutoRefresh active={running || stale} />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-medium">This week&apos;s plan</h2>
+        <h2 className="section-title">This week&apos;s plan</h2>
         <AgentLabel name="Planner agent" />
       </div>
-      {(running || stale) && <p className="text-sm text-gray-500">The Planner agent is preparing your week from your deadlines and fees…</p>}
-      {!running && !stale && run?.status === "failed" && <p className="text-sm text-red-600">Couldn&apos;t build a plan (AI unavailable).</p>}
+      {(running || stale) && <p className="text-sm text-ink/70">The Planner agent is preparing your week from your deadlines and fees…</p>}
+      {!running && !stale && run?.status === "failed" && <p className="text-sm text-danger-ink">Couldn&apos;t build a plan (AI unavailable).</p>}
       {plan && !stale && (
         <>
-          <p className="text-sm text-gray-700">{plan.summary}</p>
+          <p className="text-sm text-ink/85">{plan.summary}</p>
           <ol className="space-y-2 text-sm">
-            {plan.items.map((it) => (
-              <li key={it.title} className="flex gap-2">
-                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${dot[it.priority]}`} aria-label={`${it.priority} priority`} />
+            {plan.items.map((it, n) => (
+              <li key={it.title} className="flex items-start gap-3 rounded-md border-2 border-ink bg-cream p-2">
+                <span className={`grid size-7 shrink-0 place-items-center rounded-md border-2 border-ink font-bold ${tone[it.priority]}`} aria-label={`${it.priority} priority`}>{n + 1}</span>
                 <span>
-                  <Link href={it.link} className="font-medium hover:underline">{it.title}</Link>
-                  <span className="text-gray-600"> — {it.why}</span>
+                  <Link href={it.link} className="link font-bold">{it.title}</Link>
+                  <span className="text-ink/70"> — {it.why}</span>
                 </span>
               </li>
             ))}
@@ -125,8 +125,8 @@ async function WeekPlan({ me }: { me: Me }) {
         </>
       )}
       {run && !running && !stale && (
-        <form action={refreshPlan} className="text-xs text-gray-500">
-          Updated {relative(run.started_at)} · <SubmitButton pending="Refreshing…" className="underline disabled:opacity-50">Refresh plan</SubmitButton>
+        <form action={refreshPlan} className="text-xs text-ink/70">
+          Updated {relative(run.started_at)} · <SubmitButton pending="Refreshing…" className="btn-ghost btn-sm ml-1">Refresh plan</SubmitButton>
         </form>
       )}
     </section>
@@ -153,19 +153,19 @@ async function ActivityFeed({ me }: { me: Me }) {
 
   return (
     <section className={card}>
-      <h2 className="font-medium">Agent activity</h2>
+      <h2 className="section-title">Agent activity</h2>
       <ul className="mt-2 space-y-2 text-sm">
         {items.map((it) => (
           <li key={it.id} className="flex gap-2">
             <span aria-hidden>{icon[it.kind] ?? "•"}</span>
             <span>
               {it.link ? <Link href={it.link} className="hover:underline">{it.title}</Link> : it.title}
-              {it.body && <span className="block text-xs text-gray-500">{it.body}</span>}
-              <span className="block text-xs text-gray-400">{relative(it.at)}</span>
+              {it.body && <span className="block text-xs text-ink/70">{it.body}</span>}
+              <span className="block text-xs text-ink/60">{relative(it.at)}</span>
             </span>
           </li>
         ))}
-        {!items.length && <li className="text-gray-500">Nothing yet. Reminders and agent results show up here.</li>}
+        {!items.length && <li className="text-ink/70">Nothing yet. Reminders and agent results show up here.</li>}
       </ul>
     </section>
   );
@@ -180,28 +180,30 @@ async function ProfessorDashboard({ me }: { me: Me }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <section className={card}>
-        <h2 className="font-medium">Your courses</h2>
+        <h2 className="section-title">Your courses</h2>
         <ul className="mt-2 space-y-1 text-sm">
           {(courses ?? []).map((c) => (
-            <li key={c.id}>{c.code} — {c.name} <span className="text-gray-500">· {plural(c.enrollments?.[0]?.count ?? 0, "student")} · {plural(c.assignments?.[0]?.count ?? 0, "assignment")}</span></li>
+            <li key={c.id}>{c.code} — {c.name} <span className="text-ink/70">· {plural(c.enrollments?.[0]?.count ?? 0, "student")} · {plural(c.assignments?.[0]?.count ?? 0, "assignment")}</span></li>
           ))}
         </ul>
       </section>
       <section className={card}>
-        <h2 className="font-medium">Recent submissions</h2>
+        <h2 className="section-title">Recent submissions</h2>
         <ul className="mt-2 space-y-1 text-sm">
           {(recent ?? []).map((s) => (
             <li key={s.id}>
               <Link href={`/assignments/${s.assignment?.id}`} className="hover:underline">{s.student?.full_name} · {s.assignment?.title}</Link>
-              <span className="text-gray-500"> · <LocalTime iso={s.submitted_at} />{s.is_late && " · late"}</span>
+              <span className="text-ink/70"> · <LocalTime iso={s.submitted_at} />{s.is_late && " · late"}</span>
             </li>
           ))}
-          {!recent?.length && <li className="text-gray-500">No submissions yet.</li>}
+          {!recent?.length && <li className="text-ink/70">No submissions yet.</li>}
         </ul>
       </section>
     </div>
   );
 }
+
+const statTone: Record<string, string> = { "Outstanding fees": "bg-yellow", "Unpaid fee records": "bg-pink", Students: "bg-sky", "Late submissions": "bg-mint" };
 
 async function AdminDashboard({ me }: { me: Me }) {
   const db = await createClient();
@@ -220,8 +222,8 @@ async function AdminDashboard({ me }: { me: Me }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
       {stats.map(([label, value, href]) => {
-        const body = (<><p className="text-xs text-gray-500">{label}</p><p className="mt-1 text-xl font-semibold">{value}</p></>);
-        return href ? <Link key={label} href={href} className={`${card} hover:bg-gray-50`}>{body}</Link> : <div key={label} className={card}>{body}</div>;
+        const body = (<><p className="text-xs font-bold uppercase tracking-wide">{label}</p><p className="mt-1 text-3xl font-bold">{value}</p></>);
+        return href ? <Link key={label} href={href} className={`card-link p-5 ${statTone[label]}`}>{body}</Link> : <div key={label} className={`${card} ${statTone[label]}`}>{body}</div>;
       })}
     </div>
   );
@@ -233,16 +235,16 @@ async function Announcements() {
   const { data } = await db.from("announcements").select("id, title, body, published_at, course:courses(code)").order("published_at", { ascending: false }).limit(5);
   return (
     <section className={card}>
-      <h2 className="font-medium">Announcements</h2>
-      <ul className="mt-2 divide-y divide-gray-100">
+      <h2 className="section-title">Announcements</h2>
+      <ul className="mt-2 divide-y divide-ink/15">
         {(data ?? []).map((a) => (
           <li key={a.id} className="py-2 text-sm">
             <p className="font-medium">{a.course?.code ? `${a.course.code} · ` : "College · "}{a.title}</p>
-            <p className="text-gray-600">{a.body}</p>
-            <p className="text-xs text-gray-400"><LocalTime iso={a.published_at} /></p>
+            <p className="text-ink/70">{a.body}</p>
+            <p className="text-xs text-ink/60"><LocalTime iso={a.published_at} /></p>
           </li>
         ))}
-        {!data?.length && <li className="py-2 text-sm text-gray-500">No announcements.</li>}
+        {!data?.length && <li className="py-2 text-sm text-ink/70">No announcements.</li>}
       </ul>
     </section>
   );

@@ -4,7 +4,7 @@ import { createClient, getMe } from "@/lib/supabase";
 import { LocalTime } from "@/components/local-time";
 import { SubmitButton } from "@/components/submit-button";
 
-const field = "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm";
+const field = "mt-1 field";
 
 // Manual posting. RLS: professors only to courses they teach, admins only college-wide.
 async function post(form: FormData) {
@@ -34,7 +34,7 @@ export default async function AnnouncementsPage() {
     <div className="max-w-3xl space-y-6">
       <h1 className="text-xl font-semibold">Announcements</h1>
 
-      <form action={post} className="space-y-3 rounded-xl border border-gray-200 bg-white p-5">
+      <form action={post} className="space-y-3 card p-5">
         <h2 className="font-medium">{me.role === "admin" ? "Post to the whole college" : "Post to a course"}</h2>
         {courses && (
           <label className="block text-sm">Course
@@ -48,17 +48,17 @@ export default async function AnnouncementsPage() {
         <SubmitButton pending="Publishing…">Publish</SubmitButton>
       </form>
 
-      <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
+      <ul className="divide-y divide-ink/15 card">
         {(list ?? []).map((a) => (
           <li key={a.id} className="p-4 text-sm">
             <p className="font-medium">{a.course?.code ?? "College"} · {a.title}</p>
-            <p className="text-gray-700">{a.body}</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-ink/85">{a.body}</p>
+            <p className="text-xs text-ink/60">
               {a.author?.full_name} · <LocalTime iso={a.published_at} />{a.approval_id && " · drafted by agent, approved"}
             </p>
           </li>
         ))}
-        {!list?.length && <li className="p-4 text-sm text-gray-500">No announcements yet.</li>}
+        {!list?.length && <li className="p-4 text-sm text-ink/70">No announcements yet.</li>}
       </ul>
     </div>
   );
