@@ -26,9 +26,10 @@ export default async function OpsPage() {
   if (me.role !== "admin") redirect("/dashboard");
   const db = await createClient();
   // RLS: admins can read their college's agent runs.
-  const [{ data: run }, { data: batch }] = await Promise.all([
+  const [{ data: run }, { data: batch }, { data: announcement }] = await Promise.all([
     db.from("agent_runs").select("status, error, input, output, started_at, trigger").eq("agent", "ops").order("started_at", { ascending: false }).limit(1).maybeSingle(),
     db.from("approvals").select("id, kind, payload, created_at").eq("kind", "reminder_batch").eq("status", "pending").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    db.from("approvals").select("id, kind, payload, created_at").eq("kind", "announcement").eq("status", "pending").eq("payload->>source", "ops").order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
   const f = run?.input as unknown as OpsFigures | undefined;
   const d = run?.output as unknown as Digest | undefined;
@@ -64,6 +65,7 @@ export default async function OpsPage() {
         </section>
       )}
 
+      {announcement && <ApprovalCard a={announcement} inline />}
       {batch && <ApprovalCard a={batch} inline />}
 
       {f && (
