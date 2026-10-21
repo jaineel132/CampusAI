@@ -153,3 +153,50 @@ ${text}
     },
   });
 }
+
+// ───────── Feedback agent: new rating → anonymous themes for the professor and admin ─────────
+
+export const themesSchema = z.object({
+  overview: z.string().describe("One or two sentences on overall sentiment"),
+  themes: z.array(z.object({
+    theme: z.string().describe("Short theme, e.g. 'Clear worked examples'"),
+    sentiment: z.enum(["positive", "mixed", "negative"]),
+    mentions: z.number().int().min(1),
+  })).max(5),
+});
+export type Themes = z.infer<typeof themesSchema>;
+
+// ponytail: runs on every new/edited rating; batch on a schedule if rating volume grows.
+export async function feedbackAgent(courseId: string) {
+  const db = createServiceClient();
+  const { data: course } = await db.from("courses").select("id, institution_id, professor_id, code, name, term").eq("id", courseId).single();
+  if (!course) return;
+  const { data: ratings } = await db.from("professor_ratings").select("rating, comment").eq("course_id", course.id).eq("term", course.term);
+  const comments = (ratings ?? []).filter((r) => r.comment?.trim());
+
+  const save = (themes: Themes) =>
+    db.from("rating_summaries").upsert({
+      course_id: course.id, institution_id: course.institution_id, professor_id: course.professor_id,
+      themes: JSON.stringify(themes), updated_at: new Date().toISOString(),
+    });
+  if (!comments.length) return save({ overview: "No written comments yet.", themes: [] });
+
+  const res = await runAgent({
+    agent: "feedback",
+    trigger: "event",
+    institutionId: course.institution_id,
+    userId: course.professor_id,
+    input: { course_id: course.id, ratings: ratings?.length ?? 0, comments: comments.length }, // no comment text in the log
+    instructions: `You are the Feedback agent at a college. Group anonymous student comments about a course and its professor into 2-5 themes.
+- Paraphrase. Never quote a comment word for word or include anything that could identify a student.
+- Be constructive and specific; count how many comments support each theme.
+- ${UNTRUSTED}`,
+    prompt: `Course: ${course.code} ${course.name} (${course.term})
+
+<document>
+${comments.toSorted(() => Math.random() - 0.5).map((c) => `- (${c.rating}/5) ${c.comment}`).join("\n").slice(0, MAX_CHARS)}
+</document>`,
+    schema: themesSchema,
+  });
+  if (res.ok) await save(res.output);
+}

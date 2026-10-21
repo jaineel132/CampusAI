@@ -68,13 +68,16 @@ const [vector] = (await embedRes.json()).embeddings;
 const search = async (db: Awaited<ReturnType<typeof as>>) => {
   const { data, error } = await db.rpc("match_chunks", { query_embedding: JSON.stringify(vector), match_count: 5 });
   if (error) throw error;
-  return data as { title: string }[];
+  return data as { document_id: string }[];
 };
-const aaravHits = await search(aarav);
-if (aaravHits.length) {
-  assert.equal((await search(diya)).length, 0, "Diya gets no DBMS passages");
-  assert.equal((await search(jordan)).length, 0, "Jordan gets no college A passages");
-  console.log(`✓ RAG scope passed (Aarav: ${aaravHits.length} passages, Diya: 0, Jordan: 0)`);
+const { data: dbmsDocs } = await aarav.from("documents").select("id, course:courses!inner(code)").eq("course.code", "CS301");
+const dbmsIds = new Set((dbmsDocs ?? []).map((d) => d.id));
+const fromDbms = (hits: { document_id: string }[]) => hits.filter((h) => dbmsIds.has(h.document_id)).length;
+const aaravHits = fromDbms(await search(aarav));
+if (aaravHits) {
+  assert.equal(fromDbms(await search(diya)), 0, "Diya gets no DBMS passages");
+  assert.equal((await search(jordan)).length, 0, "Jordan gets no college A passages at all");
+  console.log(`✓ RAG scope passed (Aarav: ${aaravHits} DBMS passages, Diya: 0, Jordan: 0)`);
 } else {
   console.log("· RAG scope skipped: upload a DBMS document first");
 }
@@ -92,3 +95,18 @@ if (courseAnns.length) {
 assert.equal((await rows(aarav, "approvals")).length, 0, "students never see the approval inbox");
 assert.ok((await rows(diya, "agent_runs")).every((r) => r.user_id !== aaravId), "no one sees another student's agent runs");
 console.log("✓ approvals + agent runs scoped");
+
+// Ratings: one per student per course per term, only for enrolled courses, never readable by professors.
+const dbms = aaravCourses.find((c) => c.code === "CS301")!;
+const { data: dbmsCourse } = await aarav.from("courses").select("professor_id, term").eq("id", dbms.id).single();
+const rating = { institution_id: (await rows(aarav, "institutions"))[0].id, course_id: dbms.id, professor_id: dbmsCourse!.professor_id, term: dbmsCourse!.term, rating: 5 };
+const diyaId = (await diya.auth.getUser()).data.user!.id;
+const { error: notEnrolled } = await diya.from("professor_ratings").insert({ ...rating, student_id: diyaId });
+assert.ok(notEnrolled, "Diya cannot rate DBMS (not enrolled)");
+await aarav.from("professor_ratings").upsert({ ...rating, student_id: aaravId }, { onConflict: "student_id,course_id,term" });
+const { error: duplicate } = await aarav.from("professor_ratings").insert({ ...rating, student_id: aaravId });
+assert.ok(duplicate, "second rating for the same course + term is rejected");
+assert.equal((await rows(mehta, "professor_ratings")).length, 0, "professor still sees no raw ratings");
+const { data: agg } = await mehta.from("rating_aggregates").select("*");
+assert.ok(agg?.length && !("student_id" in agg[0]), "professor sees only anonymous aggregates");
+console.log("✓ ratings rules passed");

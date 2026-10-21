@@ -530,6 +530,9 @@ isOneToOne: false
 "my_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"record_payment":
+{ Args: { "p_amount": number,"p_currency": string,"p_fee_record_id": string,"p_receipt_url": string,"p_session_id": string }; Returns: boolean
+                           },
 "teaches":
 { Args: { "course": string }; Returns: boolean
                            }

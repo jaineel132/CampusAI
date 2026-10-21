@@ -1,6 +1,8 @@
 import { createClient, getMe } from "@/lib/supabase";
 import { money } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
+import { AutoRefresh } from "@/components/auto-refresh";
+import { startCheckout } from "./actions";
 
 const statusStyle: Record<string, string> = {
   paid: "bg-green-100 text-green-800",
@@ -8,7 +10,8 @@ const statusStyle: Record<string, string> = {
   unpaid: "bg-red-100 text-red-800",
 };
 
-export default async function FeesPage() {
+export default async function FeesPage(props: PageProps<"/fees">) {
+  const { paid: justPaid } = await props.searchParams;
   const me = await getMe();
   const db = await createClient();
   const cur = me.institution.currency;
@@ -21,10 +24,17 @@ export default async function FeesPage() {
   const due = (fees ?? []).reduce((s, f) => s + f.amount_due, 0);
   const paid = (fees ?? []).reduce((s, f) => s + f.amount_paid, 0);
   const isAdmin = me.role === "admin";
+  const waiting = !!justPaid && !isAdmin && !payments?.length;
 
   return (
     <div className="max-w-3xl space-y-6">
       <h1 className="text-xl font-semibold">{isAdmin ? "Fees overview" : "Fees & payments"}</h1>
+      {justPaid && !isAdmin && (
+        <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+          Payment submitted. Your fee updates as soon as Stripe confirms it (usually a few seconds).
+          <AutoRefresh active={waiting} />
+        </p>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         {[["Total due", due], ["Paid", paid], ["Balance", due - paid]].map(([label, value]) => (
@@ -47,6 +57,11 @@ export default async function FeesPage() {
               <div className="flex items-center gap-3">
                 <span>{money(f.amount_paid, cur)} / {money(f.amount_due, cur)}</span>
                 <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${statusStyle[f.status ?? "unpaid"]}`}>{f.status}</span>
+                {!isAdmin && f.status !== "paid" && (
+                  <form action={startCheckout.bind(null, f.id)}>
+                    <button className="rounded-md bg-gray-900 px-3 py-1 text-xs font-medium text-white">Pay {money(f.amount_due - f.amount_paid, cur)}</button>
+                  </form>
+                )}
               </div>
             </li>
           ))}
