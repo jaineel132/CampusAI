@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { createClient, getMe } from "@/lib/supabase";
-import { relative } from "@/lib/format";
+import { plural, relative } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
 import { FileUpload } from "@/components/file-upload";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { PrecheckCard } from "@/components/precheck";
 import { ApprovalCard } from "@/components/approval";
+import { Disclosure } from "@/components/disclosure";
 import type { Precheck } from "@/lib/agents";
 import { finishSubmission, retryPrecheck, startSubmission } from "../actions";
 
@@ -41,18 +42,21 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
         <p className="mt-2"><span className="badge bg-yellow">Due <LocalTime iso={a.due_at} /> · {relative(a.due_at)}</span></p>
       </div>
 
-      <section className="space-y-3 card p-5">
-        {a.file_path && (
-          <p className="text-sm">📄 <a href={`/files/assignment/${a.id}`} target="_blank" className="link">Original assignment PDF</a></p>
-        )}
-        <p className="whitespace-pre-line text-sm">{a.instructions}</p>
-        <div>
-          <h2 className="text-sm font-medium">Rubric</h2>
-          <ul className="mt-1 list-disc pl-5 text-sm">
-            {(a.rubric as string[]).map((r) => <li key={r}>{r}</li>)}
-          </ul>
+      {/* Brief starts open only for a student who still has to do the work. */}
+      <Disclosure open={me.role === "student" && !mine} className="card p-4"
+        title={<span className="section-title">📋 Brief & rubric</span>}
+        meta={<span className="text-xs muted">{plural((a.rubric as string[]).length, "rubric item")}{a.file_path && " · original PDF"}</span>}>
+        <div className="space-y-3">
+          {a.file_path && <a href={`/files/assignment/${a.id}`} target="_blank" className="btn-ghost btn-sm">📄 Original assignment PDF ↗</a>}
+          <p className="whitespace-pre-line text-sm">{a.instructions}</p>
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wide">Rubric</h2>
+            <ul className="mt-1 list-disc pl-5 text-sm">
+              {(a.rubric as string[]).map((r) => <li key={r}>{r}</li>)}
+            </ul>
+          </div>
         </div>
-      </section>
+      </Disclosure>
 
       {me.role === "student" && (
         <section className="space-y-3 card p-5">
@@ -71,7 +75,7 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
           )}
           {mine?.feedback_released_at && (
             <div className="rounded-md border-2 border-ink bg-mint p-4 text-sm">
-              <p className="font-medium">Feedback from your professor</p>
+              <p className="font-bold">📝 Feedback from your professor</p>
               <p className="mt-1 whitespace-pre-line">{mine.feedback}</p>
             </div>
           )}
@@ -88,21 +92,21 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
           <h2 className="border-b-2 border-ink p-4 font-bold">Submissions ({submissions?.length ?? 0})</h2>
           <ul className="divide-y divide-ink/15">
             {(submissions ?? []).map((s) => (
-              <li key={s.id} className="space-y-1 p-4 text-sm">
-                <div className="flex flex-wrap justify-between gap-2">
-                  <span className="font-medium">{s.student?.full_name}</span>
-                  <span className="text-ink/70">
-                    <a href={`/files/submission/${s.id}`} target="_blank" className="link">{s.file_name}</a>
-                    {" · "}<LocalTime iso={s.submitted_at} />
-                    {s.is_late && <span className="text-danger-ink"> · late</span>}
-                  </span>
-                </div>
-                <p className="text-ink/70">
-                  Pre-check: {s.precheck_status === "done" ? (s.precheck as Precheck | null)?.summary : s.precheck_status}
-                  {" · "}
-                  {s.feedback_released_at ? "feedback sent" : draftFor.has(s.id) ? "feedback draft below" : "waiting for the Submission agent"}
-                </p>
-                {draftFor.has(s.id) && <div className="pt-2"><ApprovalCard a={draftFor.get(s.id)!} inline /></div>}
+              <li key={s.id} className="p-4 text-sm">
+                <Disclosure open={draftFor.has(s.id)}
+                  title={<span className="font-bold">{s.student?.full_name}{s.is_late && <span className="badge ml-2 bg-danger">late</span>}</span>}
+                  meta={s.feedback_released_at ? <span className="badge bg-mint">feedback sent</span>
+                    : draftFor.has(s.id) ? <span className="badge bg-pink">draft to review</span>
+                    : s.precheck_status === "failed" ? <span className="badge bg-danger">pre-check failed</span>
+                    : <span className="badge bg-white">agent working…</span>}>
+                  <div className="space-y-2">
+                    <p className="muted">
+                      <a href={`/files/submission/${s.id}`} target="_blank" className="link">{s.file_name}</a> · <LocalTime iso={s.submitted_at} />
+                    </p>
+                    <p className="muted">Pre-check: {s.precheck_status === "done" ? (s.precheck as Precheck | null)?.summary : s.precheck_status}</p>
+                    {draftFor.has(s.id) && <ApprovalCard a={draftFor.get(s.id)!} inline />}
+                  </div>
+                </Disclosure>
               </li>
             ))}
             {!submissions?.length && <li className="p-4 text-sm text-ink/70">No submissions yet.</li>}

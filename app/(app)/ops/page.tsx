@@ -3,10 +3,11 @@ import { ApprovalCard } from "@/components/approval";
 import { revalidatePath } from "next/cache";
 import { createClient, getMe } from "@/lib/supabase";
 import { runOpsDigest, type Digest, type OpsFigures } from "@/lib/jobs";
-import { money } from "@/lib/format";
+import { money, plural } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
 import { AgentLabel } from "@/components/precheck";
 import { SubmitButton } from "@/components/submit-button";
+import { Disclosure } from "@/components/disclosure";
 
 export const maxDuration = 60;
 
@@ -69,6 +70,9 @@ export default async function OpsPage() {
       {batch && <ApprovalCard a={batch} inline />}
 
       {f && (
+        <Disclosure className="card p-4"
+          title={<h2 className="section-title">📊 Figures from the database</h2>}
+          meta={<span className="text-xs muted">{money(f.outstanding_total, f.currency)} outstanding · {f.late.length} late/missing · {plural(f.ratings.length, "rated course")}</span>}>
         <div className="grid gap-4 md:grid-cols-2">
           <section className={`${card} bg-pink/30`}>
             <h2 className="section-title">Outstanding fees · {money(f.outstanding_total, f.currency)}</h2>
@@ -101,6 +105,7 @@ export default async function OpsPage() {
             </ul>
           </section>
         </div>
+        </Disclosure>
       )}
     </div>
   );

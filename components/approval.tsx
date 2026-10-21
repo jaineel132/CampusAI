@@ -1,4 +1,5 @@
 import { LocalTime } from "@/components/local-time";
+import { Disclosure } from "@/components/disclosure";
 import { AgentLabel } from "@/components/precheck";
 import type { Precheck } from "@/lib/agents";
 import { money } from "@/lib/format";
@@ -23,19 +24,18 @@ export type PendingApproval = { id: string; kind: string; payload: unknown; crea
 
 // One pending agent draft with Approve / Edit / Reject. Shown in the inbox and right next to what it's about.
 // `inline` drops the context the surrounding page already shows (course, file, student).
-export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline?: boolean }) {
+export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; inline?: boolean; fold?: { open: boolean } }) {
   const p = a.payload as P;
   const rubric = Array.isArray(p.rubric) ? (p.rubric as string[]) : [];
-  return (
-    <section className={`card space-y-3 p-5 ${inline ? "bg-yellow/30" : ""}`}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="section-title">
-          {approvalTitle[a.kind]}
-          {inline ? " · waiting for your approval" : ` · ${s(p.course_code) || "College"}`}
-        </h2>
-        <span className="flex items-center gap-2 text-xs text-ink/70"><AgentLabel name={p.source === "ops" ? "Ops agent" : agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>
-      </div>
-
+  const heading = (
+    <h2 className="section-title">
+      {approvalTitle[a.kind]}
+      {inline ? " · waiting for your approval" : ` · ${s(p.course_code) || "College"}`}
+    </h2>
+  );
+  const tag = <span className="flex items-center gap-2 text-xs text-ink/70"><AgentLabel name={p.source === "ops" ? "Ops agent" : agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>;
+  const body = (
+    <>
       {a.kind === "announcement" && (
         <>
           <div className="rounded-md border-2 border-ink bg-cream p-3 text-sm">
@@ -117,6 +117,14 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
       )}
 
       <ApprovalActions id={a.id} editable={editableFor(a.kind, p, rubric)} open={a.kind === "assignment_draft" && !p.due_local} />
+    </>
+  );
+  // In the inbox each draft folds to its title line; elsewhere it shows in full next to what it's about.
+  if (fold) return <Disclosure open={fold.open} className="card p-5" title={heading} meta={tag}><div className="space-y-3">{body}</div></Disclosure>;
+  return (
+    <section className={`card space-y-3 p-5 ${inline ? "bg-yellow/30" : ""}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">{heading}{tag}</div>
+      {body}
     </section>
   );
 }

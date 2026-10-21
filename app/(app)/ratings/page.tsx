@@ -5,6 +5,7 @@ import { feedbackAgent, type Themes } from "@/lib/agents";
 import { AgentLabel } from "@/components/precheck";
 import { olderThanHours, plural } from "@/lib/format";
 import { SubmitButton } from "@/components/submit-button";
+import { Disclosure } from "@/components/disclosure";
 
 const tone = { positive: "bg-mint", mixed: "bg-yellow", negative: "bg-danger" } as const;
 
@@ -48,15 +49,17 @@ async function StudentRatings() {
       </div>
       {(courses ?? []).map((c) => {
         const r = mine?.find((m) => m.course_id === c.id && m.term === c.term);
+        const justSaved = !!r && !olderThanHours(r.updated_at, 1 / 60);
+        // Unrated courses stay open (something to do); rated ones fold to "You rated 4★".
         return (
-          <form key={c.id} action={rate.bind(null, c.id)} className="space-y-3 card p-5">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="section-title"><span className="badge bg-sky">{c.code}</span> {c.professor?.full_name}</h2>
-              <span className="text-xs text-ink/70">
-                {c.term}{r && " · you rated this"}
-                {r && !olderThanHours(r.updated_at, 1 / 60) && <span className="text-ok-ink"> · ✓ Saved</span>}
-              </span>
-            </div>
+          <Disclosure key={c.id} open={!r || justSaved} className="card p-4"
+            title={<h2 className="section-title"><span className="badge bg-sky">{c.code}</span> {c.professor?.full_name}</h2>}
+            meta={<span className="text-xs">
+              {r ? <span className="badge bg-yellow">You rated {r.rating}★</span> : <span className="badge bg-white">Not rated yet</span>}
+              {justSaved && <span className="ml-2 font-bold text-ok-ink">✓ Saved</span>}
+            </span>}>
+          <form action={rate.bind(null, c.id)} className="space-y-3">
+            <p className="text-xs muted">{c.term}</p>
             <fieldset className="flex gap-2" aria-label={`Rating for ${c.code}`}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <label key={n} className="cursor-pointer">
@@ -73,6 +76,7 @@ async function StudentRatings() {
             </label>
             <SubmitButton pending="Saving…">{r ? "Update rating" : "Submit rating"}</SubmitButton>
           </form>
+          </Disclosure>
         );
       })}
     </div>

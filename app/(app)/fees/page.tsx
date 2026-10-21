@@ -1,8 +1,9 @@
 import { createClient, getMe } from "@/lib/supabase";
-import { money } from "@/lib/format";
+import { money, plural } from "@/lib/format";
 import { LocalTime } from "@/components/local-time";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SubmitButton } from "@/components/submit-button";
+import { Disclosure } from "@/components/disclosure";
 import { startCheckout } from "./actions";
 
 const statusStyle: Record<string, string> = {
@@ -70,11 +71,12 @@ export default async function FeesPage(props: PageProps<"/fees">) {
         </ul>
       </section>
 
-      <section className="card">
-        <h2 className="border-b-2 border-ink p-4 font-bold">Payment history</h2>
-        <ul className="divide-y divide-ink/15">
+      <Disclosure className="card p-4"
+        title={<h2 className="section-title">Payment history</h2>}
+        meta={<span className="text-xs muted">{payments?.[0] ? <>{plural(payments.length, "payment")} · latest {money(payments[0].amount, payments[0].currency)}</> : "No payments yet"}</span>}>
+        <ul className="divide-y divide-ink/15 border-t-2 border-ink">
           {(payments ?? []).map((p) => (
-            <li key={p.id} className="flex flex-wrap justify-between gap-2 p-4 text-sm">
+            <li key={p.id} className="flex flex-wrap justify-between gap-2 py-3 text-sm">
               <span>{isAdmin && `${p.student?.full_name} · `}{p.fee?.description} · <LocalTime iso={p.paid_at} /></span>
               <span>
                 {money(p.amount, p.currency)}
@@ -82,9 +84,9 @@ export default async function FeesPage(props: PageProps<"/fees">) {
               </span>
             </li>
           ))}
-          {!payments?.length && <li className="p-4 text-sm text-ink/70">No payments yet.</li>}
+          {!payments?.length && <li className="py-3 text-sm text-ink/70">No payments yet.</li>}
         </ul>
-      </section>
+      </Disclosure>
     </div>
   );
 }

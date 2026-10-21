@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient, getMe } from "@/lib/supabase";
 import { LocalTime } from "@/components/local-time";
 import { ApprovalCard, approvalTitle, s } from "@/components/approval";
+import { Disclosure } from "@/components/disclosure";
 
 type P = Record<string, unknown>;
 
@@ -22,15 +23,14 @@ export default async function InboxPage() {
         <p className="text-sm text-ink/70">Agents prepared these. Nothing is published or sent until you approve. You can also approve each one right where it happened.</p>
       </div>
 
-      {(pending ?? []).map((a) => <ApprovalCard key={a.id} a={a} />)}
+      {(pending ?? []).map((a, i) => <ApprovalCard key={a.id} a={a} fold={{ open: i === 0 }} />)}
       {!pending?.length && <p className="card p-5 text-sm text-ink/70">Nothing waiting for you. 🎉</p>}
 
       {!!decided?.length && (
-        <section className="card">
-          <h2 className="border-b-2 border-ink p-4 font-bold">Recently decided</h2>
-          <ul className="divide-y divide-ink/15">
+        <Disclosure className="card p-4" title={<h2 className="section-title">Recently decided</h2>} meta={<span className="badge bg-white">{decided.length}</span>}>
+          <ul className="divide-y divide-ink/15 border-t-2 border-ink">
             {decided.map((a) => (
-              <li key={a.id} className="flex flex-wrap justify-between gap-2 p-4 text-sm">
+              <li key={a.id} className="flex flex-wrap justify-between gap-2 py-3 text-sm">
                 <span>{approvalTitle[a.kind]} · {s((a.payload as P).title) || s((a.payload as P).assignment_title)}</span>
                 <span className={a.status === "approved" ? "text-ok-ink" : "text-ink/70"}>
                   {a.status} {a.decided_at && <LocalTime iso={a.decided_at} />}
@@ -38,7 +38,7 @@ export default async function InboxPage() {
               </li>
             ))}
           </ul>
-        </section>
+        </Disclosure>
       )}
     </div>
   );
