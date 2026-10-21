@@ -20,3 +20,4 @@ export const safeName = (name: string) => name.replace(/[^\w.-]+/g, "_").slice(-
 export const isPast = (iso: string) => new Date(iso).getTime() < Date.now();
 export const daysFromNow = (n: number) => new Date(Date.now() + n * 864e5).toISOString();
 export const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+export const olderThanHours = (iso: string, h: number) => Date.now() - new Date(iso).getTime() > h * 36e5;

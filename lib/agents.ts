@@ -3,6 +3,7 @@ import { z } from "zod";
 import { runAgent, UNTRUSTED } from "./agent";
 import { createServiceClient } from "./supabase";
 import { readPages } from "./files";
+import { money } from "./format";
 
 // Each agent = instructions + output schema on the shared runtime. Facts are loaded here from the
 // database (never supplied by the model), and anything consequential becomes an approval, not a write.
@@ -199,4 +200,64 @@ ${comments.toSorted(() => Math.random() - 0.5).map((c) => `- (${c.rating}/5) ${c
     schema: themesSchema,
   });
   if (res.ok) await save(res.output);
+}
+
+// ───────── Planner agent: dashboard load (or "refresh") → ranked plan for the week ─────────
+
+export const planSchema = z.object({
+  summary: z.string().describe("One sentence overview of the week"),
+  items: z.array(z.object({
+    title: z.string().describe("What to do, e.g. 'Finish the CPU Scheduling Report'"),
+    why: z.string().describe("Short reason grounded in the data: deadline, status, fee date, new notes"),
+    link: z.string().describe("One of the provided links, exactly"),
+    priority: z.enum(["high", "medium", "low"]),
+  })).max(6),
+});
+export type Plan = z.infer<typeof planSchema>;
+
+export async function plannerAgent(studentId: string) {
+  const db = createServiceClient();
+  const { data: me } = await db.from("profiles").select("institution_id, enrollments(course_id)").eq("id", studentId).single();
+  if (!me) return;
+  const courseIds = me.enrollments.map((e) => e.course_id);
+  const now = new Date();
+  const [{ data: assignments }, { data: fees }, { data: docs }, { data: inst }] = await Promise.all([
+    db.from("assignments").select("id, title, due_at, course:courses(code), submissions(student_id, is_late)")
+      .in("course_id", courseIds).gte("due_at", new Date(now.getTime() - 7 * 864e5).toISOString()).lte("due_at", new Date(now.getTime() + 14 * 864e5).toISOString()).order("due_at"),
+    db.from("fee_records").select("description, amount_due, amount_paid, due_date").eq("student_id", studentId).neq("status", "paid"),
+    db.from("documents").select("id, title, summary, created_at, course:courses(code)").in("course_id", courseIds).eq("status", "ready").order("created_at", { ascending: false }).limit(5),
+    db.from("institutions").select("currency").eq("id", me.institution_id).single(),
+  ]);
+
+  const facts = {
+    today: now.toISOString(),
+    assignments: (assignments ?? []).map((a) => ({
+      title: `${a.course?.code} ${a.title}`, due_at: a.due_at, link: `/assignments/${a.id}`,
+      submitted: a.submissions.some((s) => s.student_id === studentId),
+    })),
+    fees: (fees ?? []).map((f) => ({ description: f.description, balance: money(f.amount_due - f.amount_paid, inst?.currency ?? "USD"), due_date: f.due_date, link: "/fees" })),
+    new_materials: (docs ?? []).map((d) => ({ title: `${d.course?.code} ${d.title}`, summary: d.summary ?? "", link: `/files/document/${d.id}` })),
+  };
+  const allowed = new Set([...facts.assignments.map((a) => a.link), ...facts.fees.map((f) => f.link), ...facts.new_materials.map((m) => m.link)]);
+
+  const res = await runAgent({
+    agent: "planner",
+    trigger: "event",
+    institutionId: me.institution_id,
+    userId: studentId,
+    input: { date: now.toISOString().slice(0, 10), assignments: facts.assignments.length, fees: facts.fees.length },
+    instructions: `You are the Planner agent. Build a short, prioritised plan for this student's week from the facts given.
+- Use only the facts: never invent deadlines, amounts or assignments. Skip assignments already submitted.
+- Rank by urgency: overdue or due soonest first, then fees due within 7 days, then reading new materials.
+- Every item's link must be copied exactly from the facts.`,
+    prompt: JSON.stringify(facts),
+    schema: planSchema,
+  });
+  // Guardrail: drop any item whose link wasn't in the facts.
+  if (res.ok) {
+    const items = res.output.items.filter((i) => allowed.has(i.link));
+    if (items.length !== res.output.items.length) {
+      await db.from("agent_runs").update({ output: { ...res.output, items } }).eq("id", res.runId);
+    }
+  }
 }

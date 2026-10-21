@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { createClient, getMe, type Me } from "@/lib/supabase";
-import { daysFromNow, isPast, money, plural, relative } from "@/lib/format";
+import { daysFromNow, isPast, money, olderThanHours, plural, relative } from "@/lib/format";
+import { plannerAgent, type Plan } from "@/lib/agents";
+import { AgentLabel } from "@/components/precheck";
+import { AutoRefresh } from "@/components/auto-refresh";
+import { refreshPlan } from "./actions";
 import { LocalTime } from "@/components/local-time";
 import { StatusBadge } from "@/components/status-badge";
 
@@ -39,6 +44,13 @@ async function StudentDashboard({ me }: { me: Me }) {
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
+      <WeekPlan me={me} />
+      <Link href="/fees" className={`${card} hover:bg-gray-50`}>
+        <h2 className="font-medium">Fee balance</h2>
+        <p className="mt-2 text-2xl font-semibold">{money(balance, me.institution.currency)}</p>
+        <p className="text-xs text-gray-500">{fees?.[0] ? `Next due ${fees[0].due_date}` : "All paid"}</p>
+      </Link>
+
       <section className={`${card} md:col-span-2`}>
         <h2 className="font-medium">Upcoming deadlines</h2>
         <ul className="mt-3 divide-y divide-gray-100">
@@ -54,11 +66,7 @@ async function StudentDashboard({ me }: { me: Me }) {
         </ul>
       </section>
 
-      <Link href="/fees" className={`${card} hover:bg-gray-50`}>
-        <h2 className="font-medium">Fee balance</h2>
-        <p className="mt-2 text-2xl font-semibold">{money(balance, me.institution.currency)}</p>
-        <p className="text-xs text-gray-500">{fees?.[0] ? `Next due ${fees[0].due_date}` : "All paid"}</p>
-      </Link>
+      <ActivityFeed me={me} />
 
       <section className={`${card} md:col-span-3`}>
         <h2 className="font-medium">My courses</h2>
@@ -69,6 +77,96 @@ async function StudentDashboard({ me }: { me: Me }) {
         </ul>
       </section>
     </div>
+  );
+}
+
+const dot = { high: "bg-red-500", medium: "bg-amber-500", low: "bg-gray-400" } as const;
+
+// Planner agent on dashboard load: reuse a plan younger than 12 h, otherwise prepare a new one in the background.
+async function WeekPlan({ me }: { me: Me }) {
+  const db = await createClient();
+  const { data: run } = await db
+    .from("agent_runs")
+    .select("status, output, started_at")
+    .eq("agent", "planner")
+    .eq("user_id", me.id)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const running = run?.status === "running" && !olderThanHours(run.started_at, 0.05);
+  const stale = !run || olderThanHours(run.started_at, 12);
+  if (stale && !running) after(() => plannerAgent(me.id));
+  const plan = run?.status === "succeeded" ? (run.output as unknown as Plan) : null;
+
+  return (
+    <section className={`${card} space-y-3 md:col-span-2`}>
+      <AutoRefresh active={running || stale} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-medium">This week&apos;s plan</h2>
+        <AgentLabel name="Planner agent" />
+      </div>
+      {(running || stale) && <p className="text-sm text-gray-500">The Planner agent is preparing your week from your deadlines and fees…</p>}
+      {!running && !stale && run?.status === "failed" && <p className="text-sm text-red-600">Couldn&apos;t build a plan (AI unavailable).</p>}
+      {plan && !stale && (
+        <>
+          <p className="text-sm text-gray-700">{plan.summary}</p>
+          <ol className="space-y-2 text-sm">
+            {plan.items.map((it) => (
+              <li key={it.title} className="flex gap-2">
+                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${dot[it.priority]}`} aria-label={`${it.priority} priority`} />
+                <span>
+                  <Link href={it.link} className="font-medium hover:underline">{it.title}</Link>
+                  <span className="text-gray-600"> — {it.why}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+      {run && !running && !stale && (
+        <form action={refreshPlan} className="text-xs text-gray-500">
+          Updated {relative(run.started_at)} · <button className="underline">Refresh plan</button>
+        </form>
+      )}
+    </section>
+  );
+}
+
+const icon: Record<string, string> = { reminder: "⏰", fee_reminder: "💳", payment: "✅", feedback: "📝", submission: "🤖" };
+
+// What agents did for this student: reminders, released feedback, payments, pre-checks.
+async function ActivityFeed({ me }: { me: Me }) {
+  const db = await createClient();
+  const [{ data: notes }, { data: runs }] = await Promise.all([
+    db.from("notifications").select("id, kind, title, body, link, created_at").eq("user_id", me.id).order("created_at", { ascending: false }).limit(8),
+    db.from("agent_runs").select("id, status, started_at, input").eq("user_id", me.id).eq("agent", "submission").order("started_at", { ascending: false }).limit(4),
+  ]);
+  const items = [
+    ...(notes ?? []).map((n) => ({ id: n.id, kind: n.kind, title: n.title, body: n.body, link: n.link, at: n.created_at })),
+    ...(runs ?? []).map((r) => ({
+      id: r.id, kind: "submission", at: r.started_at, body: null,
+      link: `/assignments/${(r.input as { assignment_id?: string })?.assignment_id ?? ""}`,
+      title: r.status === "failed" ? "Submission agent couldn't pre-check your file" : `Submission agent pre-checked ${(r.input as { file_name?: string })?.file_name ?? "your file"}`,
+    })),
+  ].toSorted((a, b) => b.at.localeCompare(a.at)).slice(0, 8);
+
+  return (
+    <section className={card}>
+      <h2 className="font-medium">Agent activity</h2>
+      <ul className="mt-2 space-y-2 text-sm">
+        {items.map((it) => (
+          <li key={it.id} className="flex gap-2">
+            <span aria-hidden>{icon[it.kind] ?? "•"}</span>
+            <span>
+              {it.link ? <Link href={it.link} className="hover:underline">{it.title}</Link> : it.title}
+              {it.body && <span className="block text-xs text-gray-500">{it.body}</span>}
+              <span className="block text-xs text-gray-400">{relative(it.at)}</span>
+            </span>
+          </li>
+        ))}
+        {!items.length && <li className="text-gray-500">Nothing yet. Reminders and agent results show up here.</li>}
+      </ul>
+    </section>
   );
 }
 

@@ -110,3 +110,7 @@ assert.equal((await rows(mehta, "professor_ratings")).length, 0, "professor stil
 const { data: agg } = await mehta.from("rating_aggregates").select("*");
 assert.ok(agg?.length && !("student_id" in agg[0]), "professor sees only anonymous aggregates");
 console.log("✓ ratings rules passed");
+
+// Leave demo data as it was: remove the test rating (no student delete policy exists, so use the service role).
+await createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
+  .from("professor_ratings").delete().eq("student_id", aaravId).eq("course_id", dbms.id).eq("rating", 5).is("comment", null);
