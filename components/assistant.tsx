@@ -40,14 +40,14 @@ export function Assistant({ role }: { role: string }) {
   if (!open)
     return (
       <button onClick={() => setOpen(true)} className="btn fixed right-4 bottom-4 z-40 bg-pink px-5 py-3 shadow-brutal">
-        🤖 Ask CampusOS
+        🤖 Ask Kibo
       </button>
     );
 
   return (
     <aside aria-label="Assistant" className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l-2 border-ink bg-cream sm:w-96">
       <div className="flex items-center justify-between border-b-2 border-ink bg-pink p-3">
-        <p className="font-bold">🤖 Campus Assistant</p>
+        <p className="font-bold">🤖 Kibo Assistant</p>
         <button onClick={() => setOpen(false)} aria-label="Close assistant" className="btn-ghost btn-sm">✕</button>
       </div>
 

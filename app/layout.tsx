@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CampusOS",
+  title: "Kibo",
   description: "One college app where AI agents do the busywork",
 };
 

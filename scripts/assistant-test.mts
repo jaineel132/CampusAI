@@ -12,7 +12,7 @@ async function cookiesFor(email: string) {
   const db = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: { getAll: () => [...jar].map(([name, value]) => ({ name, value })), setAll: (list) => list.forEach((c) => jar.set(c.name, c.value)) },
   });
-  const { error } = await db.auth.signInWithPassword({ email, password: "CampusOS-demo-2026" });
+  const { error } = await db.auth.signInWithPassword({ email, password: "Kibo-demo-2026" });
   if (error) throw error;
   return [...jar].map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("; ");
 }

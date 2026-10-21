@@ -44,7 +44,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <div className="flex flex-1 flex-col md:flex-row">
       <aside className="border-b-2 border-ink bg-cream p-4 md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:overflow-y-auto md:border-r-2 md:border-b-0">
         <MobileMenu brand={<>
-          <p className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-2 py-0.5 text-xl font-bold tracking-tight shadow-brutal-sm">CampusOS</p>
+          <p className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-2 py-0.5 text-xl font-bold tracking-tight shadow-brutal-sm">Kibo</p>
           <p className="mt-2 text-xs font-medium muted">{me.institution.name}</p>
         </>}>
         <nav className="mt-5 flex flex-col gap-1.5">

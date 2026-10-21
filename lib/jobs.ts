@@ -129,8 +129,8 @@ export async function runOpsDigest(institutionId: string, trigger: "schedule" | 
     instructions: `You are the Ops agent for a college admin. Write a short weekly digest from the figures provided.
 - Use ONLY the numbers given; never estimate or add figures. Amounts are in ${figures.currency}.
 - Name the most urgent follow-ups. Be factual and brief. Refer to people by name, not pronouns.
-- Suggested actions must be things the admin can do in CampusOS: approve the fee reminder batch, approve the announcement draft, or follow up with a named student or professor. No emails, no system changes.
-- If a college announcement would help, write it in "announcement" (it is drafted for the admin to approve). It may say only what is due, the due date, and "Pay from the Fees page in CampusOS". Never name students or amounts owed, and never mention consequences (penalties, registration, late fees): none are in the figures.`,
+- Suggested actions must be things the admin can do in Kibo: approve the fee reminder batch, approve the announcement draft, or follow up with a named student or professor. No emails, no system changes.
+- If a college announcement would help, write it in "announcement" (it is drafted for the admin to approve). It may say only what is due, the due date, and "Pay from the Fees page in Kibo". Never name students or amounts owed, and never mention consequences (penalties, registration, late fees): none are in the figures.`,
     prompt: `Outstanding fees (${figures.outstanding.length}, total ${money(figures.outstanding_total, figures.currency)}):
 ${figures.outstanding.map((o) => `- ${o.student}: ${o.description}, ${money(o.balance, figures.currency)}, due ${o.due_date}${o.overdue ? " (OVERDUE)" : ""}`).join("\n") || "- none"}
 
@@ -161,7 +161,7 @@ ${figures.ratings.map((r) => `- ${r.course} ${r.professor}: ${r.average}/5 from 
       institution_id: institutionId, kind: "reminder_batch", reviewer_role: "admin", agent_run_id: res.runId,
       payload: {
         title: `Fee reminders for ${figures.outstanding.length} fee record(s)`,
-        message: "This is a reminder that your fee payment is due. Please pay from the Fees page in CampusOS.",
+        message: "This is a reminder that your fee payment is due. Please pay from the Fees page in Kibo.",
         students: figures.outstanding.map(({ student_id, student, fee_id, description, balance, due_date }) => ({ student_id, student, fee_id, description, balance, due_date })),
         currency: figures.currency,
       },

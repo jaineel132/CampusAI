@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { signIn } from "@/app/actions";
 
-const DEMO_PASSWORD = "CampusOS-demo-2026";
+const DEMO_PASSWORD = "Kibo-demo-2026";
 const demoAccounts = [
   { label: "Student — Aarav (Northfield)", email: "aarav@northfield.demo", colour: "bg-yellow" },
   { label: "Student B — Diya (Northfield)", email: "diya@northfield.demo", colour: "bg-yellow" },
@@ -21,7 +21,7 @@ export default function LoginPage() {
     <main className="flex flex-1 items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
-          <h1 className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-4 py-1 text-4xl font-bold tracking-tight shadow-brutal">CampusOS</h1>
+          <h1 className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-4 py-1 text-4xl font-bold tracking-tight shadow-brutal">Kibo</h1>
           <p className="mt-4 text-sm font-medium muted">One college app. AI agents do the busywork.</p>
         </div>
 

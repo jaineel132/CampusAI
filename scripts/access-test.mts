@@ -8,7 +8,7 @@ const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 async function as(email: string) {
   const db = createClient(url, anonKey, { auth: { persistSession: false } });
-  const { error } = await db.auth.signInWithPassword({ email, password: "CampusOS-demo-2026" });
+  const { error } = await db.auth.signInWithPassword({ email, password: "Kibo-demo-2026" });
   if (error) throw error;
   return db;
 }
