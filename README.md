@@ -41,7 +41,7 @@ All agents run on one runtime (`lib/agent.ts`). It logs every run to `agent_runs
 | **Materials** | Professor uploads notes | After indexing, writes a summary and drafts a "new material" announcement | Professor approves before students see it |
 | **Reminder** | Daily cron (08:00 IST) | Assignments due within 48 h with no submission, and unpaid fees due within 7 days, become reminders in the student's feed. Deduplicated per day. **Rule-based (no LLM), so it can never invent a deadline** | None (informational) |
 | **Feedback** | New or edited rating | Groups anonymous comments into themes (paraphrased; it never receives student ids) | None (read-only) |
-| **Ops** | Weekly cron (Mon), or "Run digest now" | Outstanding fees, late/missing submissions and rating themes. **Numbers come straight from SQL**; the model only writes the narrative. Prepares a fee-reminder batch | Admin approves before reminders are sent |
+| **Ops** | Weekly cron (Mon), or "Run digest now" | Outstanding fees, late/missing submissions and rating themes. **Numbers come straight from SQL**; the model only writes the narrative. Prepares a fee-reminder batch and, when useful, a college announcement draft (facts from the figures only) | Admin approves both, right under the digest or in the inbox |
 | **Planner** | Dashboard load (cached 12 h), refresh, or chat | Ranked weekly plan from real deadlines, submission status, fees and new materials. Any link not taken from the facts is dropped | None |
 | **Campus Assistant** | Chat, any role | Answers from records and course documents with page sources. Read-only tools, scoped by RLS; admin-only digest tool | Refuses anything that would change a record |
 

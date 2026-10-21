@@ -33,7 +33,7 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
           {approvalTitle[a.kind]}
           {inline ? " · waiting for your approval" : ` · ${s(p.course_code) || "College"}`}
         </h2>
-        <span className="flex items-center gap-2 text-xs text-ink/70"><AgentLabel name={agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>
+        <span className="flex items-center gap-2 text-xs text-ink/70"><AgentLabel name={p.source === "ops" ? "Ops agent" : agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>
       </div>
 
       {a.kind === "announcement" && (
@@ -42,7 +42,8 @@ export function ApprovalCard({ a, inline = false }: { a: PendingApproval; inline
             <p className="font-medium">{s(p.title)}</p>
             <p className="mt-1 text-ink/85">{s(p.body)}</p>
           </div>
-          {!inline && (
+          {!inline && p.source === "ops" && <p className="text-xs text-ink/70">Data used: the latest <a href="/ops" className="underline">Ops digest</a>. Goes to the whole college.</p>}
+          {!inline && !!p.document_id && (
             <p className="text-xs text-ink/70">
               Data used: <a href={`/files/document/${s(p.document_id)}`} target="_blank" className="underline">{s(p.document_title)}</a>
               {" — "}{s(p.summary)}

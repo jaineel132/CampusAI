@@ -79,6 +79,8 @@ const digestSchema = z.object({
   headline: z.string().describe("One-line summary of the week"),
   narrative: z.string().describe("3-5 sentences for the admin. Use only the figures given."),
   suggested_actions: z.array(z.string()).max(4),
+  announcement: z.object({ title: z.string(), body: z.string().describe("2-3 sentences to all students: what is due, when, and where to pay. Nothing else") }).nullable()
+    .describe("A college-wide announcement draft, only if one would help (e.g. a fee deadline is near); otherwise null"),
 });
 export type Digest = z.infer<typeof digestSchema>;
 
@@ -127,7 +129,8 @@ export async function runOpsDigest(institutionId: string, trigger: "schedule" | 
     instructions: `You are the Ops agent for a college admin. Write a short weekly digest from the figures provided.
 - Use ONLY the numbers given; never estimate or add figures. Amounts are in ${figures.currency}.
 - Name the most urgent follow-ups. Be factual and brief. Refer to people by name, not pronouns.
-- Suggested actions must be things the admin can do in CampusOS: approve the fee reminder batch in the inbox, post a college announcement, or follow up with a named student or professor. No emails, no system changes.`,
+- Suggested actions must be things the admin can do in CampusOS: approve the fee reminder batch, approve the announcement draft, or follow up with a named student or professor. No emails, no system changes.
+- If a college announcement would help, write it in "announcement" (it is drafted for the admin to approve). It may say only what is due, the due date, and "Pay from the Fees page in CampusOS". Never name students or amounts owed, and never mention consequences (penalties, registration, late fees): none are in the figures.`,
     prompt: `Outstanding fees (${figures.outstanding.length}, total ${money(figures.outstanding_total, figures.currency)}):
 ${figures.outstanding.map((o) => `- ${o.student}: ${o.description}, ${money(o.balance, figures.currency)}, due ${o.due_date}${o.overdue ? " (OVERDUE)" : ""}`).join("\n") || "- none"}
 
@@ -139,9 +142,19 @@ ${figures.ratings.map((r) => `- ${r.course} ${r.professor}: ${r.average}/5 from 
     schema: digestSchema,
   });
 
+  const db = createServiceClient();
+  // A new digest replaces the previous digest's undecided drafts.
+  await db.from("approvals").update({ status: "rejected", decided_at: new Date().toISOString() })
+    .eq("institution_id", institutionId).eq("kind", "announcement").eq("status", "pending").eq("payload->>source", "ops");
+  if (res.ok && res.output.announcement) {
+    await db.from("approvals").insert({
+      institution_id: institutionId, kind: "announcement", reviewer_role: "admin", agent_run_id: res.runId,
+      payload: { source: "ops", title: res.output.announcement.title, body: res.output.announcement.body },
+    });
+  }
+
   // Fee reminder batch for the admin to approve. Prepared even if the prose failed: it's built from figures.
   if (figures.outstanding.length) {
-    const db = createServiceClient();
     await db.from("approvals").update({ status: "rejected", decided_at: new Date().toISOString() })
       .eq("institution_id", institutionId).eq("kind", "reminder_batch").eq("status", "pending");
     await db.from("approvals").insert({
