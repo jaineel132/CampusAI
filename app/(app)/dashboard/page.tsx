@@ -9,6 +9,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { refreshPlan } from "./actions";
 import { LocalTime } from "@/components/local-time";
 import { StatusBadge } from "@/components/status-badge";
+import { Disclosure } from "@/components/disclosure";
 
 const card = "card p-5";
 
@@ -32,18 +33,20 @@ export default async function Dashboard() {
 async function StudentDashboard({ me }: { me: Me }) {
   const db = await createClient();
   const weekAgo = daysFromNow(-7);
-  const [{ data: assignments }, { data: submissions }, { data: fees }, { data: courses }] = await Promise.all([
+  const [{ data: assignments }, { data: submissions }, { data: fees }] = await Promise.all([
     db.from("assignments").select("id, title, due_at, course:courses(code)").gte("due_at", weekAgo).order("due_at").limit(8),
     db.from("submissions").select("assignment_id, is_late").eq("student_id", me.id),
     db.from("fee_records").select("amount_due, amount_paid, due_date").eq("student_id", me.id).neq("status", "paid").order("due_date"),
-    db.from("courses").select("id, code, name, professor:profiles(full_name)").order("code"),
   ]);
   const done = new Map((submissions ?? []).map((s) => [s.assignment_id, s]));
   // Hide past deadlines that were already handed in; keep missing ones visible.
   const deadlines = (assignments ?? []).filter((a) => !isPast(a.due_at) || !done.has(a.id));
   const balance = (fees ?? []).reduce((s, f) => s + f.amount_due - f.amount_paid, 0);
+  const todo = deadlines.filter((a) => !done.has(a.id));
 
+  // Focus first (plan + money), everything else folded with its key fact in the summary line.
   return (
+    <div className="space-y-4">
     <div className="grid gap-4 md:grid-cols-3">
       <WeekPlan me={me} />
       <Link href="/fees" className={`card-link self-start p-5 ${balance > 0 ? "bg-yellow" : "bg-mint"}`}>
@@ -52,9 +55,12 @@ async function StudentDashboard({ me }: { me: Me }) {
         <p className="text-xs text-ink/70">{fees?.[0] ? `Next due ${fees[0].due_date}` : "All paid"}</p>
       </Link>
 
-      <section className={`${card} md:col-span-2`}>
-        <h2 className="section-title">Upcoming deadlines</h2>
-        <ul className="mt-3 divide-y divide-ink/15">
+    </div>
+
+      <Disclosure className={card}
+        title={<h2 className="section-title">Upcoming deadlines</h2>}
+        meta={<span className="text-xs muted">{todo[0] ? <>Next: <b>{todo[0].title}</b> ({relative(todo[0].due_at)}) · {todo.length} to do</> : "Nothing to do 🎉"}</span>}>
+        <ul className="divide-y divide-ink/15">
           {deadlines.map((a) => (
             <li key={a.id}>
               <Link href={`/assignments/${a.id}`} className="flex items-center justify-between gap-2 py-2 text-sm hover:underline">
@@ -65,18 +71,9 @@ async function StudentDashboard({ me }: { me: Me }) {
           ))}
           {!deadlines.length && <li className="py-2 text-sm text-ink/70">Nothing due. 🎉</li>}
         </ul>
-      </section>
+      </Disclosure>
 
       <ActivityFeed me={me} />
-
-      <section className={`${card} md:col-span-3`}>
-        <h2 className="section-title">My courses</h2>
-        <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-          {(courses ?? []).map((c) => (
-            <li key={c.id} className="text-sm">{c.code} — {c.name} <span className="text-ink/70">· {c.professor?.full_name}</span></li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 }
@@ -152,9 +149,10 @@ async function ActivityFeed({ me }: { me: Me }) {
   ].toSorted((a, b) => b.at.localeCompare(a.at)).slice(0, 8);
 
   return (
-    <section className={card}>
-      <h2 className="section-title">Agent activity</h2>
-      <ul className="mt-2 space-y-2 text-sm">
+    <Disclosure className={card}
+      title={<h2 className="section-title">Agent activity</h2>}
+      meta={<span className="text-xs muted">{items[0] ? <>Latest: {items[0].title} · {relative(items[0].at)}</> : "Nothing yet"}</span>}>
+      <ul className="space-y-2 text-sm">
         {items.map((it) => (
           <li key={it.id} className="flex gap-2">
             <span aria-hidden>{icon[it.kind] ?? "•"}</span>
@@ -167,7 +165,7 @@ async function ActivityFeed({ me }: { me: Me }) {
         ))}
         {!items.length && <li className="text-ink/70">Nothing yet. Reminders and agent results show up here.</li>}
       </ul>
-    </section>
+    </Disclosure>
   );
 }
 
@@ -234,9 +232,10 @@ async function Announcements() {
   // RLS: only announcements for my courses or the whole college.
   const { data } = await db.from("announcements").select("id, title, body, published_at, course:courses(code)").order("published_at", { ascending: false }).limit(5);
   return (
-    <section className={card}>
-      <h2 className="section-title">Announcements</h2>
-      <ul className="mt-2 divide-y divide-ink/15">
+    <Disclosure className={card}
+      title={<h2 className="section-title">Announcements</h2>}
+      meta={<span className="text-xs muted">{data?.[0] ? <>Latest: <b>{data[0].title}</b> · {plural(data.length, "post")}</> : "None yet"}</span>}>
+      <ul className="divide-y divide-ink/15">
         {(data ?? []).map((a) => (
           <li key={a.id} className="py-2 text-sm">
             <p className="font-medium">{a.course?.code ? `${a.course.code} · ` : "College · "}{a.title}</p>
@@ -246,6 +245,6 @@ async function Announcements() {
         ))}
         {!data?.length && <li className="py-2 text-sm text-ink/70">No announcements.</li>}
       </ul>
-    </section>
+    </Disclosure>
   );
 }

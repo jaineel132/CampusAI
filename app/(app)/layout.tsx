@@ -3,6 +3,7 @@ import { signOut } from "@/app/actions";
 import { Assistant } from "@/components/assistant";
 import { SubmitButton } from "@/components/submit-button";
 import { NavLink } from "@/components/nav-link";
+import { MobileMenu } from "@/components/mobile-menu";
 
 const roleColour: Record<Role, string> = { student: "bg-yellow", professor: "bg-pink", admin: "bg-mint" };
 
@@ -42,9 +43,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex flex-1 flex-col md:flex-row">
       <aside className="border-b-2 border-ink bg-cream p-4 md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:overflow-y-auto md:border-r-2 md:border-b-0">
-        <p className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-2 py-0.5 text-xl font-bold tracking-tight shadow-brutal-sm">CampusOS</p>
-        <p className="mt-2 text-xs font-medium muted">{me.institution.name}</p>
-        <nav className="mt-5 flex flex-wrap gap-1.5 md:flex-col">
+        <MobileMenu brand={<>
+          <p className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-2 py-0.5 text-xl font-bold tracking-tight shadow-brutal-sm">CampusOS</p>
+          <p className="mt-2 text-xs font-medium muted">{me.institution.name}</p>
+        </>}>
+        <nav className="mt-5 flex flex-col gap-1.5">
           {nav[me.role].map((l) => (
             <NavLink key={l.href} href={l.href} active={roleColour[me.role]}>
               {l.label}
@@ -59,6 +62,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             <SubmitButton pending="Signing out…" className="btn-ghost btn-sm mt-3 w-full">Sign out</SubmitButton>
           </form>
         </div>
+        </MobileMenu>
       </aside>
       <main className="min-w-0 flex-1 p-4 pb-24 md:p-8">{children}</main>
       <Assistant role={me.role} />

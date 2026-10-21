@@ -66,3 +66,18 @@ body {
 @utility section-title {
   @apply font-bold;
 }
+
+/* Collapsible sections (<details class="disclosure">): our own chevron instead of the browser marker. */
+details.disclosure > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+details.disclosure > summary .chevron {
+  transition: transform 150ms;
+}
+details.disclosure[open] > summary .chevron {
+  transform: rotate(90deg);
+}
