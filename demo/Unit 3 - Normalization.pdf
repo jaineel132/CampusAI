@@ -1,0 +1,54 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 755 >>
+stream
+BT /F1 11 Tf 14 TL 50 790 Td /F1 15 Tf (Unit 3 - Normalization \(CS301 Database Management Systems\)) Tj /F1 11 Tf T* () Tj T* (Normalization organizes a relational schema to reduce redundancy and avoid) Tj T* (update, insert and delete anomalies. We decompose a relation into smaller) Tj T* (relations using functional dependencies \(FDs\).) Tj T* () Tj T* (A functional dependency X -> Y means that the value of X determines Y.) Tj T* (Example: in Student\(RollNo, Name, Dept, HOD\), RollNo -> Name, Dept and Dept -> HOD.) Tj T* () Tj T* (First Normal Form \(1NF\): every attribute holds a single atomic value.) Tj T* (A column storing a list of phone numbers violates 1NF; move phones to their) Tj T* (own table StudentPhone\(RollNo, Phone\).) Tj T* ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 449 >>
+stream
+BT /F1 11 Tf 14 TL 50 790 Td /F1 15 Tf (Second Normal Form \(2NF\)) Tj /F1 11 Tf T* () Tj T* (A relation is in 2NF if it is in 1NF and no non-key attribute depends on only) Tj T* (part of a composite key \(no partial dependency\).) Tj T* (Example: Enrollment\(RollNo, CourseID, StudentName, Grade\). StudentName depends) Tj T* (only on RollNo, so split into Student\(RollNo, StudentName\) and) Tj T* (Enrollment\(RollNo, CourseID, Grade\).) Tj T* ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 742 >>
+stream
+BT /F1 11 Tf 14 TL 50 790 Td /F1 15 Tf (Third Normal Form \(3NF\)) Tj /F1 11 Tf T* () Tj T* (A relation is in 3NF if it is in 2NF and no non-key attribute depends on another) Tj T* (non-key attribute \(no transitive dependency\).) Tj T* () Tj T* (Worked example: Student\(RollNo, Name, Dept, HOD\) with RollNo -> Dept and Dept -> HOD.) Tj T* (HOD depends on RollNo only through Dept, a transitive dependency. If a department) Tj T* (changes its HOD we must update many rows \(update anomaly\).) Tj T* (Decompose into Student\(RollNo, Name, Dept\) and Department\(Dept, HOD\).) Tj T* (Both relations are now in 3NF and the join on Dept is lossless.) Tj T* () Tj T* (BCNF is a stricter form: for every FD X -> Y, X must be a superkey.) Tj T* ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R 7 0 R] /Count 3 >>
+endobj
+9 0 obj
+<< /Type /Catalog /Pages 8 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000885 00000 n 
+0000001011 00000 n 
+0000001511 00000 n 
+0000001637 00000 n 
+0000002430 00000 n 
+0000002556 00000 n 
+0000002625 00000 n 
+trailer
+<< /Size 10 /Root 9 0 R >>
+startxref
+2674
+%%EOF

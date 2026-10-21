@@ -1,18 +1,19 @@
 import Link from "next/link";
 import { getMe, type Role } from "@/lib/supabase";
 import { signOut } from "@/app/actions";
+import { Assistant } from "@/components/assistant";
 
 // Add a link here when its page exists (PRD: no button that does nothing).
 const nav: Record<Role, { href: string; label: string }[]> = {
   student: [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/courses", label: "Courses" },
+    { href: "/courses", label: "Courses & materials" },
     { href: "/assignments", label: "Assignments" },
     { href: "/fees", label: "Fees & payments" },
   ],
   professor: [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/courses", label: "My courses" },
+    { href: "/courses", label: "My courses & uploads" },
     { href: "/assignments", label: "Assignments & submissions" },
   ],
   admin: [
@@ -43,7 +44,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </form>
         </div>
       </aside>
-      <main className="flex-1 p-4 md:p-8">{children}</main>
+      <main className="flex-1 p-4 pb-20 md:p-8">{children}</main>
+      <Assistant role={me.role} />
     </div>
   );
 }

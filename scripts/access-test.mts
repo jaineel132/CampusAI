@@ -55,4 +55,25 @@ const { error: feeWrite } = await aarav.from("fee_records").update({ amount_paid
 const fees = await rows(aarav, "fee_records");
 assert.ok(feeWrite || fees.every((f) => f.amount_paid < 999999), "student cannot mark fees paid");
 
-console.log("✓ access test passed");
+console.log("✓ record access passed");
+
+// RAG scope: DBMS notes are searchable by Aarav (enrolled) but never by Diya (OS only) or Jordan (other college).
+const embedRes = await fetch(`${url}/functions/v1/embed`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json", Authorization: `Bearer ${anonKey}` },
+  body: JSON.stringify({ input: ["third normal form transitive dependency"] }),
+});
+const [vector] = (await embedRes.json()).embeddings;
+const search = async (db: Awaited<ReturnType<typeof as>>) => {
+  const { data, error } = await db.rpc("match_chunks", { query_embedding: JSON.stringify(vector), match_count: 5 });
+  if (error) throw error;
+  return data as { title: string }[];
+};
+const aaravHits = await search(aarav);
+if (aaravHits.length) {
+  assert.equal((await search(diya)).length, 0, "Diya gets no DBMS passages");
+  assert.equal((await search(jordan)).length, 0, "Jordan gets no college A passages");
+  console.log(`✓ RAG scope passed (Aarav: ${aaravHits.length} passages, Diya: 0, Jordan: 0)`);
+} else {
+  console.log("· RAG scope skipped: upload a DBMS document first");
+}
