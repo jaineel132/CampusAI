@@ -21,16 +21,14 @@ College systems are scattered: fees in one portal, notes in another, assignments
 
 1. [Try it in 5 minutes](#try-it-in-5-minutes)
 2. [Demo accounts](#demo-accounts)
-3. [Features by role](#features-by-role)
-4. [The agents](#the-agents)
-5. [Screenshots](#screenshots)
-6. [Architecture](#architecture)
-7. [Security](#security)
-8. [Getting started](#getting-started)
-9. [Environment variables](#environment-variables)
-10. [Tests](#tests)
-11. [Design decisions](#design-decisions)
-12. [Future scope](#future-scope)
+3. [The agents](#the-agents)
+4. [Screenshots](#screenshots)
+5. [Architecture](#architecture)
+6. [Security](#security)
+7. [Getting started](#getting-started)
+8. [Tests](#tests)
+9. [Design decisions](#design-decisions)
+10. [Future scope](#future-scope)
 
 ## Try it in 5 minutes
 
@@ -77,19 +75,6 @@ All accounts use the password **`CampusAI-demo-2026`**. The login page has one-c
 
 All data is fictional. `npm run seed` resets it and moves every deadline relative to today. Two sample PDFs for trying the agents are in [`demo/`](demo).
 
-## Features by role
-
-| Student | Professor | Admin |
-| --- | --- | --- |
-| Dashboard: the Planner agent's week plan, fee balance, deadlines, agent activity, announcements | Dashboard: courses, recent submissions | Dashboard: outstanding fees, students, late submissions |
-| Courses → materials (PDF + agent summary) and assignments, for enrolled courses only | My courses & uploads: PDF/TXT notes are indexed and summarised | Weekly college report (every Monday, or on demand) |
-| Assignments: the brief and original PDF, submit a file, instant rubric pre-check, then the professor's feedback | Assignments: upload the assignment PDF (the agent drafts it) or create by hand; review submissions | Fees overview (read-only) |
-| Fees & payments: Stripe test checkout, history, receipts | Approval inbox: assignment, feedback and announcement drafts, also approvable right where they appear | Approval inbox: fee reminder batches and college announcements |
-| Rate professors (anonymous, one per course per term) | Ratings & themes (anonymous averages only) | Ratings & themes (college-wide) |
-| Assistant (side panel on every page) | Assistant · Announcements | Assistant · Announcements (college-wide) |
-
-Every page opens collapsed to one-line summaries ("Next: Normalization Case Study, in 2 days · 2 to do"), with whatever needs action already open.
-
 ## The agents
 
 There are **8 agents**, grouped by who they work for: 7 use an LLM, and the Reminder agent is deliberately rule-based. The LLM agents run on one runtime (`lib/agent.ts`) that logs every run to `agent_runs`, calls the model with a fixed output schema, and records failures so the UI shows "failed — retry" instead of hiding them.
@@ -135,6 +120,11 @@ There are **8 agents**, grouped by who they work for: 7 use an LLM, and the Remi
 
 ## Architecture
 
+Next.js on Vercel, with every query running as the signed-in user so Postgres row-level security decides what exists. Event agents run in the background after a request, scheduled agents run on Vercel Cron, and the Stripe webhook is the only writer of payments.
+
+<details>
+<summary><b>Diagram, stack, key files and tables</b></summary>
+
 ```
 Browser ──► Next.js on Vercel (App Router, Server Components, Server Actions, Route Handlers)
               │  every user query runs AS the user (Supabase session) → Postgres RLS decides what rows exist
@@ -162,7 +152,14 @@ AI: Groq (openai/gpt-oss-120b) behind lib/ai.ts, the one provider module
 
 **Tables:** `institutions` (each college's settings) → `profiles`, `courses`, `enrollments`, `assignments`, `submissions`, `documents`, `document_chunks`, `fee_records`, `payments`, `announcements`, `professor_ratings`, `rating_summaries`, `agent_runs`, `approvals`, `notifications`. Every table carries `institution_id`.
 
+</details>
+
 ## Security
+
+Every database policy checks the **college first, then the role**, so students see only their own records, professors only their courses, and colleges never see each other. Agents and the assistant can only read, and only what the signed-in user may see.
+
+<details>
+<summary><b>Full security model</b></summary>
 
 - **Two guards.** Every RLS policy checks the institution first, then the role or ownership. Server code adds what RLS can't express (file type, deadline, path checks). Hiding a button is never the only guard.
 - **Students** see only their own fees, payments, submissions, ratings and notifications, and only courses, materials, document chunks and announcements for courses they're enrolled in.
@@ -172,6 +169,8 @@ AI: Groq (openai/gpt-oss-120b) behind lib/ai.ts, the one provider module
 - **Writes the user shouldn't control** (submission rows, payments, feedback release, notifications) are done server-side after validation. Users have no RLS write policy on them.
 - **Prompt injection.** Document and submission text is wrapped as untrusted content, and no tool can write.
 - **Secrets** live only in server env vars (`.env.example` lists the names).
+
+</details>
 
 ## Getting started
 
@@ -189,7 +188,8 @@ npm run dev                           # http://localhost:3000
 **Stripe:** create a webhook destination for `checkout.session.completed` pointing to `https://<your-domain>/api/stripe/webhook`, then put its signing secret in `STRIPE_WEBHOOK_SECRET`.
 **Vercel:** add the same env vars (except `SUPABASE_DB_URL`). The crons in `vercel.json` register on deploy.
 
-## Environment variables
+<details>
+<summary><b>Environment variables</b></summary>
 
 | Variable | Used for |
 | --- | --- |
@@ -201,7 +201,14 @@ npm run dev                           # http://localhost:3000
 | `CRON_SECRET` | Authenticates Vercel Cron calls |
 | `NEXT_PUBLIC_APP_URL` | Stripe success/cancel redirects |
 
+</details>
+
 ## Tests
+
+Five small runnable checks prove the security rules (no student or college can see another's data, including through the assistant), payment safety, the scheduled agents and the RAG chunking.
+
+<details>
+<summary><b>What each test proves</b></summary>
 
 Small runnable checks, no framework. `test:chunk` and `test:access` run on their own; the others need the app running (`npm run dev`, or pass the live URL as an argument).
 
@@ -215,6 +222,8 @@ Small runnable checks, no framework. `test:chunk` and `test:access` run on their
 
 Run `npm run seed` again after `test:webhook` or `test:cron`.
 
+</details>
+
 ## Design decisions
 
 - **Humans approve, agents prepare.** Anything published, sent or changing a record goes through an approval, shown right where it happened and in one inbox.
@@ -225,27 +234,9 @@ Run `npm run seed` again after `test:webhook` or `test:cron`.
 
 ## Future scope
 
-The MVP proves the core idea: agents prepare the work, people approve it. These are the next steps to take it to a real college, in rough priority order.
+The MVP proves the core idea: agents prepare the work, people approve it. Next, in rough priority order:
 
-**More busywork for agents**
-- **Quiz and practice-question agent:** turns uploaded notes into practice questions for students and quiz drafts for professors (approved before release).
-- **Early-warning agent:** spots students falling behind (missed deadlines, overdue fees, failing pre-checks) and drafts a check-in for their mentor.
-- **Attendance and timetable agent:** keeps class schedules, room changes and attendance in the same dashboard, and warns students before they drop below the attendance limit.
-- **Grade release:** a full gradebook where approved feedback and grades flow into the student's record and transcript.
-
-**Reaching people where they are**
-- **Notifications by email, SMS and WhatsApp,** not only in the app, with quiet hours and a daily digest.
-- **Mobile app** (installable PWA first), so reminders and approvals work from a phone.
-- **Multilingual answers,** so the assistant can reply in the student's language.
-
-**Ready for a whole college**
-- **Onboarding at scale:** student self-signup, CSV import of courses and enrollments, and sign-in with the college's Google or Microsoft accounts.
-- **Integrations:** sync with existing ERP and LMS systems (Moodle, Google Classroom) instead of replacing them on day one.
-- **Live payments:** move Stripe from test mode to live, with refunds, instalments and receipts the finance office can export (plus Razorpay/UPI for Indian colleges).
-- **Better documents:** OCR for scanned PDFs and handwritten notes, so every upload can be searched.
-
-**Trust and quality**
-- **Agent quality checks:** a test set of real submissions and briefs to measure each agent's accuracy before changing models or prompts.
-- **Stronger anonymity for ratings:** show themes only after a minimum number of ratings, so no single student can be identified.
-- **Admin audit view:** one page showing every agent run, what it used and who approved it (already logged in `agent_runs`).
-- **Cost control at scale:** batch the Feedback agent on a schedule and cache repeated questions to keep AI costs low.
+- **More agents:** a quiz and practice-question agent built from uploaded notes, and an early-warning agent that spots students falling behind and drafts a check-in for their mentor.
+- **Reach:** email, SMS and WhatsApp notifications, and an installable mobile app.
+- **Ready for a whole college:** self-signup and CSV import, college Google/Microsoft sign-in, ERP and LMS integrations (Moodle, Google Classroom), and live payments with refunds (plus Razorpay/UPI).
+- **Trust and quality:** an accuracy test set for every agent, ratings themes shown only above a minimum count, and an admin page listing every agent run and who approved it.
