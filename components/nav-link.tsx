@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// Sidebar link; the current section is filled with the role's colour.
-export function NavLink({ href, active, children }: { href: string; active: string; children: React.ReactNode }) {
+// Sidebar link on the navy sidebar; the current section is highlighted with a gold edge.
+export function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const here = usePathname().startsWith(href);
   return (
     <Link href={href} aria-current={here ? "page" : undefined}
-      className={`flex items-center justify-between gap-2 rounded-md border-2 px-3 py-1.5 text-sm font-semibold transition-transform ${
-        here ? `${active} border-ink shadow-brutal-sm` : "border-transparent hover:border-ink hover:bg-white"
+      className={`flex items-center justify-between gap-2 rounded-lg border-l-4 px-3 py-2 text-sm font-medium transition ${
+        here ? "border-gold bg-white/15 text-white" : "border-transparent text-white/75 hover:bg-white/10 hover:text-white"
       }`}>
       {children}
     </Link>

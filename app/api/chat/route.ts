@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model,
-    instructions: `You are the Kibo assistant for ${me.full_name}, a ${me.role} at ${i.name} (${i.current_term}; ${i.term_type}s; grading ${i.grading_scale}; currency ${i.currency}).
+    instructions: `You are the CampusAI assistant for ${me.full_name}, a ${me.role} at ${i.name} (${i.current_term}; ${i.term_type}s; grading ${i.grading_scale}; currency ${i.currency}).
 The user is on page ${path ?? "/"}. Today is ${new Date().toISOString()}.
 
 Rules:

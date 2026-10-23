@@ -49,7 +49,7 @@ async function StudentDashboard({ me }: { me: Me }) {
     <div className="space-y-4">
     <div className="grid gap-4 md:grid-cols-3">
       <WeekPlan me={me} />
-      <Link href="/fees" className={`card-link self-start p-5 ${balance > 0 ? "bg-yellow" : "bg-mint"}`}>
+      <Link href="/fees" className={`card-link self-start p-5 ${balance > 0 ? "bg-warn" : "bg-ok"}`}>
         <h2 className="section-title">Fee balance</h2>
         <p className="mt-2 text-3xl font-bold">{money(balance, me.institution.currency)}</p>
         <p className="text-xs text-ink/70">{fees?.[0] ? `Next due ${fees[0].due_date}` : "All paid"}</p>
@@ -59,8 +59,8 @@ async function StudentDashboard({ me }: { me: Me }) {
 
       <Disclosure className={card}
         title={<h2 className="section-title">Upcoming deadlines</h2>}
-        meta={<span className="text-xs muted">{todo[0] ? <>Next: <b>{todo[0].title}</b> ({relative(todo[0].due_at)}) · {todo.length} to do</> : "Nothing to do 🎉"}</span>}>
-        <ul className="divide-y divide-ink/15">
+        meta={<span className="text-xs muted">{todo[0] ? <>Next: <b>{todo[0].title}</b> ({relative(todo[0].due_at)}) · {todo.length} to do</> : "Nothing to do ✓"}</span>}>
+        <ul className="divide-y divide-line">
           {deadlines.map((a) => (
             <li key={a.id}>
               <Link href={`/assignments/${a.id}`} className="flex items-center justify-between gap-2 py-2 text-sm hover:underline">
@@ -69,7 +69,7 @@ async function StudentDashboard({ me }: { me: Me }) {
               </Link>
             </li>
           ))}
-          {!deadlines.length && <li className="py-2 text-sm text-ink/70">Nothing due. 🎉</li>}
+          {!deadlines.length && <li className="py-2 text-sm text-ink/70">Nothing due. ✓</li>}
         </ul>
       </Disclosure>
 
@@ -78,7 +78,7 @@ async function StudentDashboard({ me }: { me: Me }) {
   );
 }
 
-const tone = { high: "bg-danger", medium: "bg-yellow", low: "bg-white" } as const;
+const tone = { high: "bg-danger", medium: "bg-warn", low: "bg-white" } as const;
 
 // Planner agent on dashboard load: reuse a plan younger than 12 h, otherwise prepare a new one in the background.
 async function WeekPlan({ me }: { me: Me }) {
@@ -110,8 +110,8 @@ async function WeekPlan({ me }: { me: Me }) {
           <p className="text-sm text-ink/85">{plan.summary}</p>
           <ol className="space-y-2 text-sm">
             {plan.items.map((it, n) => (
-              <li key={it.title} className="flex items-start gap-3 rounded-md border-2 border-ink bg-cream p-2">
-                <span className={`grid size-7 shrink-0 place-items-center rounded-md border-2 border-ink font-bold ${tone[it.priority]}`} aria-label={`${it.priority} priority`}>{n + 1}</span>
+              <li key={it.title} className="flex items-start gap-3 rounded-lg border border-line bg-canvas p-2">
+                <span className={`grid size-7 shrink-0 place-items-center rounded-lg border border-line font-bold ${tone[it.priority]}`} aria-label={`${it.priority} priority`}>{n + 1}</span>
                 <span>
                   <Link href={it.link} className="link font-bold">{it.title}</Link>
                   <span className="text-ink/70"> — {it.why}</span>
@@ -130,7 +130,7 @@ async function WeekPlan({ me }: { me: Me }) {
   );
 }
 
-const icon: Record<string, string> = { reminder: "⏰", fee_reminder: "💳", payment: "✅", feedback: "📝", submission: "🤖" };
+const icon: Record<string, string> = { reminder: "⏰", fee_reminder: "💳", payment: "✅", feedback: "📝", submission: "✦" };
 
 // What agents did for this student: reminders, released feedback, payments, pre-checks.
 async function ActivityFeed({ me }: { me: Me }) {
@@ -201,7 +201,7 @@ async function ProfessorDashboard({ me }: { me: Me }) {
   );
 }
 
-const statTone: Record<string, string> = { "Outstanding fees": "bg-yellow", "Unpaid fee records": "bg-pink", Students: "bg-sky", "Late submissions": "bg-mint" };
+const statTone: Record<string, string> = { "Outstanding fees": "bg-warn", "Unpaid fee records": "bg-ai", Students: "bg-info", "Late submissions": "bg-ok" };
 
 async function AdminDashboard({ me }: { me: Me }) {
   const db = await createClient();
@@ -235,7 +235,7 @@ async function Announcements() {
     <Disclosure className={card}
       title={<h2 className="section-title">Announcements</h2>}
       meta={<span className="text-xs muted">{data?.[0] ? <>Latest: <b>{data[0].title}</b> · {plural(data.length, "post")}</> : "None yet"}</span>}>
-      <ul className="divide-y divide-ink/15">
+      <ul className="divide-y divide-line">
         {(data ?? []).map((a) => (
           <li key={a.id} className="py-2 text-sm">
             <p className="font-medium">{a.course?.code ? `${a.course.code} · ` : "College · "}{a.title}</p>

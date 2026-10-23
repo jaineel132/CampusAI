@@ -10,7 +10,7 @@ export function Disclosure({ title, meta, open, children, className = "" }: {
   return (
     <details open={open} className={`disclosure ${className}`}>
       <summary className="flex flex-wrap items-center gap-2">
-        <span aria-hidden className="chevron grid size-6 shrink-0 place-items-center rounded-md border-2 border-ink bg-white text-[10px] font-bold">▶</span>
+        <span aria-hidden className="chevron grid size-6 shrink-0 place-items-center rounded-lg border border-line bg-white text-[10px] font-bold">▶</span>
         {/* The title keeps at least ~10rem; when the meta doesn't fit beside it, the meta wraps below. */}
         <span className="min-w-0 grow basis-40 break-words">{title}</span>
         {meta && <span className="ml-auto">{meta}</span>}

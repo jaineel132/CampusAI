@@ -33,7 +33,7 @@ export function ApprovalActions({ id, editable, open = false }: { id: string; ed
         </details>
       )}
       <div className="flex gap-2">
-        <button name="decision" value="approve" disabled={pending} className="btn bg-mint">
+        <button name="decision" value="approve" disabled={pending} className="btn-ok">
           {pending ? "Working…" : "Approve"}
         </button>
         <button name="decision" value="reject" disabled={pending} className="btn-ghost">

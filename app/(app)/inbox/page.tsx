@@ -24,11 +24,11 @@ export default async function InboxPage() {
       </div>
 
       {(pending ?? []).map((a, i) => <ApprovalCard key={a.id} a={a} fold={{ open: i === 0 }} />)}
-      {!pending?.length && <p className="card p-5 text-sm text-ink/70">Nothing waiting for you. 🎉</p>}
+      {!pending?.length && <p className="card p-5 text-sm text-ink/70">Nothing waiting for you. ✓</p>}
 
       {!!decided?.length && (
         <Disclosure className="card p-4" title={<h2 className="section-title">Recently decided</h2>} meta={<span className="badge bg-white">{decided.length}</span>}>
-          <ul className="divide-y divide-ink/15 border-t-2 border-ink">
+          <ul className="divide-y divide-line border-t border-line">
             {decided.map((a) => (
               <li key={a.id} className="flex flex-wrap justify-between gap-2 py-3 text-sm">
                 <span>{approvalTitle[a.kind]} · {s((a.payload as P).title) || s((a.payload as P).assignment_title)}</span>

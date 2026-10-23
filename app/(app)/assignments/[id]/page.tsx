@@ -37,17 +37,17 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
     <div className="max-w-3xl space-y-6">
       <AutoRefresh active={pending} />
       <div>
-        <p className="text-sm text-ink/70"><span className="badge bg-sky">{a.course?.code}</span> {a.course?.name}</p>
+        <p className="text-sm text-ink/70"><span className="badge bg-info">{a.course?.code}</span> {a.course?.name}</p>
         <h1 className="heading mt-2">{a.title}</h1>
-        <p className="mt-2"><span className="badge bg-yellow">Due <LocalTime iso={a.due_at} /> · {relative(a.due_at)}</span></p>
+        <p className="mt-2"><span className="badge bg-warn">Due <LocalTime iso={a.due_at} /> · {relative(a.due_at)}</span></p>
       </div>
 
       {/* Brief starts open only for a student who still has to do the work. */}
       <Disclosure open={me.role === "student" && !mine} className="card p-4"
-        title={<span className="section-title">📋 Brief & rubric</span>}
+        title={<span className="section-title">Brief & rubric</span>}
         meta={<span className="text-xs muted">{plural((a.rubric as string[]).length, "rubric item")}{a.file_path && " · original PDF"}</span>}>
         <div className="space-y-3">
-          {a.file_path && <a href={`/files/assignment/${a.id}`} target="_blank" className="btn-ghost btn-sm">📄 Original assignment PDF ↗</a>}
+          {a.file_path && <a href={`/files/assignment/${a.id}`} target="_blank" className="btn-ghost btn-sm">Original assignment PDF ↗</a>}
           <p className="whitespace-pre-line text-sm">{a.instructions}</p>
           <div>
             <h2 className="text-xs font-bold uppercase tracking-wide">Rubric</h2>
@@ -74,8 +74,8 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
             <PrecheckCard status={mine.precheck_status} precheck={mine.precheck as Precheck | null} retry={retryPrecheck.bind(null, mine.id)} />
           )}
           {mine?.feedback_released_at && (
-            <div className="rounded-md border-2 border-ink bg-mint p-4 text-sm">
-              <p className="font-bold">📝 Feedback from your professor</p>
+            <div className="rounded-lg border border-line bg-ok p-4 text-sm">
+              <p className="font-bold">Feedback from your professor</p>
               <p className="mt-1 whitespace-pre-line">{mine.feedback}</p>
             </div>
           )}
@@ -89,14 +89,14 @@ export default async function AssignmentPage(props: PageProps<"/assignments/[id]
 
       {me.role !== "student" && (
         <section className="card">
-          <h2 className="border-b-2 border-ink p-4 font-bold">Submissions ({submissions?.length ?? 0})</h2>
-          <ul className="divide-y divide-ink/15">
+          <h2 className="border-b border-line p-4 font-bold">Submissions ({submissions?.length ?? 0})</h2>
+          <ul className="divide-y divide-line">
             {(submissions ?? []).map((s) => (
               <li key={s.id} className="p-4 text-sm">
                 <Disclosure open={draftFor.has(s.id)}
                   title={<span className="font-bold">{s.student?.full_name}{s.is_late && <span className="badge ml-2 bg-danger">late</span>}</span>}
-                  meta={s.feedback_released_at ? <span className="badge bg-mint">feedback sent</span>
-                    : draftFor.has(s.id) ? <span className="badge bg-pink">draft to review</span>
+                  meta={s.feedback_released_at ? <span className="badge bg-ok">feedback sent</span>
+                    : draftFor.has(s.id) ? <span className="badge bg-ai">draft to review</span>
                     : s.precheck_status === "failed" ? <span className="badge bg-danger">pre-check failed</span>
                     : <span className="badge bg-white">agent working…</span>}>
                   <div className="space-y-2">

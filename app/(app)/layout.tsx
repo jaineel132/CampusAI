@@ -5,7 +5,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { NavLink } from "@/components/nav-link";
 import { MobileMenu } from "@/components/mobile-menu";
 
-const roleColour: Record<Role, string> = { student: "bg-yellow", professor: "bg-pink", admin: "bg-mint" };
+const roleColour: Record<Role, string> = { student: "bg-info", professor: "bg-ai", admin: "bg-ok" };
 
 // Add a link here when its page exists (PRD: no button that does nothing).
 const nav: Record<Role, { href: string; label: string }[]> = {
@@ -42,21 +42,21 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     : await (await createClient()).from("approvals").select("id", { count: "exact", head: true }).eq("status", "pending");
   return (
     <div className="flex flex-1 flex-col md:flex-row">
-      <aside className="border-b-2 border-ink bg-cream p-4 md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:overflow-y-auto md:border-r-2 md:border-b-0">
+      <aside className="bg-navy p-4 text-white md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:overflow-y-auto">
         <MobileMenu brand={<>
-          <p className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-2 py-0.5 text-xl font-bold tracking-tight shadow-brutal-sm">Kibo</p>
-          <p className="mt-2 text-xs font-medium muted">{me.institution.name}</p>
+          <p className="text-xl font-bold tracking-tight">Campus<span className="text-gold">AI</span></p>
+          <p className="mt-1 text-xs text-white/60">{me.institution.name}</p>
         </>}>
         <nav className="mt-5 flex flex-col gap-1.5">
           {nav[me.role].map((l) => (
-            <NavLink key={l.href} href={l.href} active={roleColour[me.role]}>
+            <NavLink key={l.href} href={l.href}>
               {l.label}
-              {l.href === "/inbox" && !!inbox && <span className="badge bg-pink">{inbox}</span>}
+              {l.href === "/inbox" && !!inbox && <span className="rounded-full bg-gold px-2 py-0.5 text-xs font-bold text-navy">{inbox}</span>}
             </NavLink>
           ))}
         </nav>
-        <div className="card mt-5 p-3 text-sm md:mt-8">
-          <p className="font-bold">{me.full_name}</p>
+        <div className="mt-5 rounded-xl bg-white/10 p-3 text-sm md:mt-8">
+          <p className="font-semibold">{me.full_name}</p>
           <span className={`badge mt-1 capitalize ${roleColour[me.role]}`}>{me.role}</span>
           <form action={signOut}>
             <SubmitButton pending="Signing out…" className="btn-ghost btn-sm mt-3 w-full">Sign out</SubmitButton>

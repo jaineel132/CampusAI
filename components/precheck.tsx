@@ -6,12 +6,12 @@ const color = { met: "text-ok-ink", partial: "text-warn-ink", missing: "text-dan
 
 // "Prepared by agent" label used wherever AI output is shown.
 export function AgentLabel({ name }: { name: string }) {
-  return <span className="sticker">🤖 {name}</span>;
+  return <span className="sticker">✦ {name}</span>;
 }
 
 export function PrecheckCard({ status, precheck, retry }: { status: string; precheck: Precheck | null; retry?: () => Promise<void> }) {
   return (
-    <div className="space-y-2 rounded-md border-2 border-ink bg-sky/25 p-4 text-sm">
+    <div className="space-y-2 rounded-lg border border-line bg-info/25 p-4 text-sm">
       <div className="flex items-center justify-between gap-2">
         <p className="font-bold">Rubric pre-check</p>
         <AgentLabel name="Submission agent" />

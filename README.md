@@ -1,6 +1,4 @@
-# Kibo
-
-*Kibo (希望) means "hope" in Japanese.*
+# CampusAI
 
 One web app where students, professors and college admins do everything, and AI agents do the busywork for all three. Agents act on events (a submission, an upload, a rating, a schedule), not just chat, and a human approves anything that is published or changes a record.
 
@@ -8,7 +6,7 @@ One web app where students, professors and college admins do everything, and AI 
 
 ## Demo accounts
 
-All accounts use the password **`Kibo-demo-2026`**. The login page has one-click buttons for each.
+All accounts use the password **`CampusAI-demo-2026`**. The login page has one-click buttons for each.
 
 | Role | Email | College |
 | --- | --- | --- |
@@ -45,7 +43,7 @@ All agents run on one runtime (`lib/agent.ts`). It logs every run to `agent_runs
 | **Feedback** | New or edited rating | Groups anonymous comments into themes (paraphrased; it never receives student ids) | None (read-only) |
 | **Ops** | Weekly cron (Mon), or "Run digest now" | Outstanding fees, late/missing submissions and rating themes. **Numbers come straight from SQL**; the model only writes the narrative. Prepares a fee-reminder batch and, when useful, a college announcement draft (facts from the figures only) | Admin approves both, right under the digest or in the inbox |
 | **Planner** | Dashboard load (cached 12 h), refresh, or chat | Ranked weekly plan from real deadlines, submission status, fees and new materials. Any link not taken from the facts is dropped | None |
-| **Kibo Assistant** | Chat, any role | Answers from records and course documents with page sources. Read-only tools, scoped by RLS; admin-only digest tool | Refuses anything that would change a record |
+| **CampusAI Assistant** | Chat, any role | Answers from records and course documents with page sources. Read-only tools, scoped by RLS; admin-only digest tool | Refuses anything that would change a record |
 
 ## Architecture
 
@@ -54,7 +52,7 @@ Browser ──► Next.js on Vercel (App Router, Server Components, Server Actio
               │  every user query runs AS the user (Supabase session) → Postgres RLS decides what rows exist
               │
               ├─ after()  ─► event agents (assignment, submission, materials, feedback, planner) ─► agent_runs + approvals
-              ├─ /api/chat ─► Kibo Assistant (AI SDK streamText + typed Zod tools)
+              ├─ /api/chat ─► CampusAI Assistant (AI SDK streamText + typed Zod tools)
               ├─ /api/cron/daily · /api/cron/weekly ─► Reminder + Ops agents (Vercel Cron, Bearer CRON_SECRET)
               └─ /api/stripe/webhook ─► the ONLY writer of payments (verified signature, idempotent)
 

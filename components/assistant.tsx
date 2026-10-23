@@ -17,7 +17,7 @@ function Inline({ text }: { text: string }) {
   return text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*\s][^*]*\*|\/(?:assignments|courses|fees|dashboard)[\w/-]*)/g).map((t, i) =>
     t.startsWith("/") ? <a key={i} href={t} className="link">{t.startsWith("/assignments/") ? "Open assignment" : t}</a>
     : t.startsWith("**") ? <strong key={i}>{t.slice(2, -2)}</strong>
-    : t.startsWith("`") ? <code key={i} className="rounded border border-ink bg-cream px-1 font-mono text-xs">{t.slice(1, -1)}</code>
+    : t.startsWith("`") ? <code key={i} className="rounded border border-line bg-canvas px-1 font-mono text-xs">{t.slice(1, -1)}</code>
     : t.startsWith("*") && t.length > 2 ? <em key={i}>{t.slice(1, -1)}</em>
     : t
   );
@@ -39,15 +39,15 @@ export function Assistant({ role }: { role: string }) {
 
   if (!open)
     return (
-      <button onClick={() => setOpen(true)} className="btn fixed right-4 bottom-4 z-40 bg-pink px-5 py-3 shadow-brutal">
-        🤖 Ask Kibo
+      <button onClick={() => setOpen(true)} className="btn fixed right-4 bottom-4 z-40 rounded-full px-5 py-3 shadow-lift">
+        ✦ Ask CampusAI
       </button>
     );
 
   return (
-    <aside aria-label="Assistant" className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l-2 border-ink bg-cream sm:w-96">
-      <div className="flex items-center justify-between border-b-2 border-ink bg-pink p-3">
-        <p className="font-bold">🤖 Kibo Assistant</p>
+    <aside aria-label="Assistant" className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l border-line bg-canvas sm:w-96">
+      <div className="flex items-center justify-between bg-navy p-3 text-white">
+        <p className="font-bold">✦ CampusAI Assistant</p>
         <button onClick={() => setOpen(false)} aria-label="Close assistant" className="btn-ghost btn-sm">✕</button>
       </div>
 
@@ -67,7 +67,7 @@ export function Assistant({ role }: { role: string }) {
           );
           const unique = [...new Map(sources.map((s) => [`${s.document_id}:${s.page}`, s])).values()];
           return (
-            <div key={m.id} className={`rounded-md border-2 border-ink p-2 ${m.role === "user" ? "ml-8 bg-yellow" : "mr-4 bg-white shadow-brutal-sm"}`}>
+            <div key={m.id} className={`rounded-lg p-2 ${m.role === "user" ? "ml-8 bg-navy text-white" : "mr-4 border border-line bg-white shadow-card"}`}>
               {m.parts.map((p, i) =>
                 p.type === "text" ? <p key={i} className="whitespace-pre-wrap"><Inline text={p.text} /></p>
                 : p.type.startsWith("tool-") && "state" in p && p.state !== "output-available" ? (
@@ -78,7 +78,7 @@ export function Assistant({ role }: { role: string }) {
                 <div className="mt-2 flex flex-wrap gap-1">
                   {unique.map((s) => (
                     <a key={`${s.document_id}:${s.page}`} href={`/files/document/${s.document_id}#page=${s.page}`} target="_blank"
-                      className="badge bg-sky hover:underline">
+                      className="badge bg-info hover:underline">
                       {s.title}, p. {s.page}
                     </a>
                   ))}
@@ -89,14 +89,14 @@ export function Assistant({ role }: { role: string }) {
         })}
         {status === "submitted" && <p className="text-xs muted">Thinking…</p>}
         {error && (
-          <div role="alert" className="rounded-md border-2 border-ink bg-danger/30 p-2">
+          <div role="alert" className="rounded-lg border border-line bg-danger/30 p-2">
             The assistant is unavailable right now (AI provider error).{" "}
             <button onClick={() => regenerate()} className="link">Retry</button>
           </div>
         )}
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="flex gap-2 border-t-2 border-ink bg-white p-3">
+      <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="flex gap-2 border-t border-line bg-white p-3">
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about deadlines, fees, notes…" aria-label="Message"
           className="field flex-1" />
         <button disabled={busy || !input.trim()} className="btn">Send</button>

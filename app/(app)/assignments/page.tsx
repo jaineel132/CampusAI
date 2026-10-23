@@ -37,20 +37,20 @@ export default async function AssignmentsPage() {
       <h1 className="heading">Assignments</h1>
       {courses && courses.length > 0 && (
         <>
-          {reading && <p className="card bg-yellow/40 p-4 text-sm">🤖 The Assignment agent is reading {lastFile}…</p>}
+          {reading && <p className="card bg-ai/60 p-4 text-sm">The Assignment agent is reading {lastFile}…</p>}
           {lastRun?.status === "failed" && (
             <p role="alert" className="card bg-danger/30 p-4 text-sm">Couldn&apos;t draft from {lastFile}: {lastRun.error?.slice(0, 120)} Upload it again, or create the assignment by hand.</p>
           )}
           {(drafts ?? []).map((d) => <ApprovalCard key={d.id} a={d} inline />)}
           <Disclosure className="card p-4"
-            title={<span className="section-title">➕ New assignment</span>}
+            title={<span className="section-title">New assignment</span>}
             meta={<AgentLabel name="Assignment agent" />}>
             <div className="space-y-4">
               <p className="text-sm muted">Upload the assignment PDF: the Assignment agent drafts the title, instructions, rubric and deadline. Students see nothing until you approve.</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {courses.map((c) => (
                   <div key={c.id} className="space-y-1 text-sm">
-                    <p className="font-bold"><span className="badge bg-sky">{c.code}</span> {c.name}</p>
+                    <p className="font-bold"><span className="badge bg-info">{c.code}</span> {c.name}</p>
                     <FileUpload label="Upload assignment PDF" start={startBrief.bind(null, c.id)} finish={finishBrief.bind(null, c.id)} />
                   </div>
                 ))}
@@ -69,7 +69,7 @@ export default async function AssignmentsPage() {
         const subs = list.reduce((n, a) => n + (a.submissions?.[0]?.count ?? 0), 0);
         return (
           <Disclosure key={code} open={todo > 0} className="card p-4"
-            title={<span className="section-title"><span className="badge bg-sky">{code}</span> {list[0].course?.name}</span>}
+            title={<span className="section-title"><span className="badge bg-info">{code}</span> {list[0].course?.name}</span>}
             meta={<span className="text-xs muted">{plural(list.length, "assignment")} · {isStudent ? (todo ? `${todo} to do` : "all submitted ✓") : plural(subs, "submission")}</span>}>
             <ul className="space-y-2">
               {list.map((a) => {

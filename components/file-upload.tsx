@@ -45,7 +45,7 @@ export function FileUpload(props: {
   return (
     <form onSubmit={onSubmit} className="space-y-2">
       <input type="file" name="file" accept=".pdf,.txt,application/pdf,text/plain" aria-label={props.label} disabled={busy}
-        className="block w-full text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border-2 file:border-ink file:bg-white file:px-3 file:py-1.5 file:font-semibold hover:file:bg-cream" />
+        className="block w-full text-sm file:mr-3 file:cursor-pointer file:rounded-lg file:border file:border-line file:bg-white file:px-3 file:py-1.5 file:font-semibold hover:file:bg-canvas" />
       <button disabled={busy} className="btn">
         {state.status === "uploading" ? "Uploading…" : state.status === "saving" ? "Saving…" : props.label}
       </button>

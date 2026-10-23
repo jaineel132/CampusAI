@@ -48,13 +48,13 @@ export default async function OpsPage() {
       </div>
 
       {run?.status === "failed" && (
-        <p role="alert" className="rounded-md border-2 border-ink bg-danger/40 p-3 text-sm text-danger-ink">
+        <p role="alert" className="rounded-lg border border-line bg-danger/40 p-3 text-sm text-danger-ink">
           The AI summary failed ({run.error?.slice(0, 120)}). The figures below are still accurate. Try running it again.
         </p>
       )}
 
       {d && (
-        <section className={`${card} space-y-2 bg-yellow`}>
+        <section className={`${card} space-y-2 bg-warn`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-bold">{d.headline}</h2>
             <AgentLabel name="Ops agent" />
@@ -71,10 +71,10 @@ export default async function OpsPage() {
 
       {f && (
         <Disclosure className="card p-4"
-          title={<h2 className="section-title">📊 Figures from the database</h2>}
+          title={<h2 className="section-title">Figures from the database</h2>}
           meta={<span className="text-xs muted">{money(f.outstanding_total, f.currency)} outstanding · {f.late.length} late/missing · {plural(f.ratings.length, "rated course")}</span>}>
         <div className="grid gap-4 md:grid-cols-2">
-          <section className={`${card} bg-pink/30`}>
+          <section className={`${card} bg-ai/30`}>
             <h2 className="section-title">Outstanding fees · {money(f.outstanding_total, f.currency)}</h2>
             <ul className="mt-2 space-y-1 text-sm">
               {f.outstanding.map((o) => (
@@ -86,7 +86,7 @@ export default async function OpsPage() {
               {!f.outstanding.length && <li className="text-ink/70">All fees paid.</li>}
             </ul>
           </section>
-          <section className={`${card} bg-sky/30`}>
+          <section className={`${card} bg-info/30`}>
             <h2 className="section-title">Late or missing submissions (14 days)</h2>
             <ul className="mt-2 space-y-1 text-sm">
               {f.late.map((l, i) => (
@@ -95,11 +95,11 @@ export default async function OpsPage() {
               {!f.late.length && <li className="text-ink/70">None.</li>}
             </ul>
           </section>
-          <section className={`${card} bg-mint/30 md:col-span-2`}>
+          <section className={`${card} bg-ok/30 md:col-span-2`}>
             <h2 className="section-title">Professor ratings</h2>
             <ul className="mt-2 space-y-1 text-sm">
               {f.ratings.map((r) => (
-                <li key={r.course}>{r.course} · {r.professor} · <span className="badge bg-yellow">{r.average}/5</span> ({r.count}) <span className="text-ink/70">{r.overview}</span></li>
+                <li key={r.course}>{r.course} · {r.professor} · <span className="badge bg-warn">{r.average}/5</span> ({r.count}) <span className="text-ink/70">{r.overview}</span></li>
               ))}
               {!f.ratings.length && <li className="text-ink/70">No ratings yet.</li>}
             </ul>

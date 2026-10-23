@@ -6,7 +6,7 @@ const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPAB
   auth: { persistSession: false },
 });
 
-const DEMO_PASSWORD = "Kibo-demo-2026";
+const DEMO_PASSWORD = "CampusAI-demo-2026";
 
 const day = 24 * 60 * 60 * 1000;
 const inDays = (n: number) => new Date(Date.now() + n * day);
@@ -113,7 +113,7 @@ async function main() {
   await must(
     db.from("announcements").insert({
       institution_id: A.id, author_id: id.adminA, title: "Welcome to the odd semester",
-      body: "Classes begin this week. Check Kibo for deadlines, materials and fees.",
+      body: "Classes begin this week. Check CampusAI for deadlines, materials and fees.",
     })
   );
 

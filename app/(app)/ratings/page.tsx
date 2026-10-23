@@ -7,7 +7,7 @@ import { olderThanHours, plural } from "@/lib/format";
 import { SubmitButton } from "@/components/submit-button";
 import { Disclosure } from "@/components/disclosure";
 
-const tone = { positive: "bg-mint", mixed: "bg-yellow", negative: "bg-danger" } as const;
+const tone = { positive: "bg-ok", mixed: "bg-warn", negative: "bg-danger" } as const;
 
 // One rating per student per course per term; saving again edits it (unique constraint + upsert).
 async function rate(courseId: string, form: FormData) {
@@ -53,9 +53,9 @@ async function StudentRatings() {
         // Unrated courses stay open (something to do); rated ones fold to "You rated 4★".
         return (
           <Disclosure key={c.id} open={!r || justSaved} className="card p-4"
-            title={<h2 className="section-title"><span className="badge bg-sky">{c.code}</span> {c.professor?.full_name}</h2>}
+            title={<h2 className="section-title"><span className="badge bg-info">{c.code}</span> {c.professor?.full_name}</h2>}
             meta={<span className="text-xs">
-              {r ? <span className="badge bg-yellow">You rated {r.rating}★</span> : <span className="badge bg-white">Not rated yet</span>}
+              {r ? <span className="badge bg-warn">You rated {r.rating}★</span> : <span className="badge bg-white">Not rated yet</span>}
               {justSaved && <span className="ml-2 font-bold text-ok-ink">✓ Saved</span>}
             </span>}>
           <form action={rate.bind(null, c.id)} className="space-y-3">
@@ -64,7 +64,7 @@ async function StudentRatings() {
               {[1, 2, 3, 4, 5].map((n) => (
                 <label key={n} className="cursor-pointer">
                   <input type="radio" name="rating" value={n} required defaultChecked={r?.rating === n} className="peer sr-only" />
-                  <span className="block rounded-md border-2 border-ink bg-white px-3 py-1.5 text-sm font-bold shadow-brutal-sm transition-transform hover:-translate-y-px peer-checked:translate-x-0.5 peer-checked:translate-y-0.5 peer-checked:bg-yellow peer-checked:shadow-none peer-focus-visible:ring-4 peer-focus-visible:ring-sky">
+                  <span className="block rounded-lg border border-line bg-white px-3 py-1.5 text-sm font-semibold shadow-card transition hover:bg-canvas peer-checked:border-navy peer-checked:bg-navy peer-checked:text-white peer-focus-visible:ring-4 peer-focus-visible:ring-navy/25">
                     {n}★
                   </span>
                 </label>
@@ -104,9 +104,9 @@ async function RatingThemes() {
         return (
           <section key={c.id} className="space-y-2 card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="section-title"><span className="badge bg-sky">{c.code}</span> {c.name} <span className="text-sm font-normal text-ink/70">· {c.professor?.full_name}</span></h2>
+              <h2 className="section-title"><span className="badge bg-info">{c.code}</span> {c.name} <span className="text-sm font-normal text-ink/70">· {c.professor?.full_name}</span></h2>
               {agg ? (
-                <span className="rounded-md border-2 border-ink bg-yellow px-3 py-1 text-right shadow-brutal-sm">
+                <span className="rounded-lg border border-line bg-warn px-3 py-1 text-right shadow-card">
                   <span className="text-xl font-bold">{agg.average}</span> / 5
                   <span className="block text-xs">{plural(agg.count ?? 0, "rating")}</span>
                 </span>

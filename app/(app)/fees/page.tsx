@@ -7,8 +7,8 @@ import { Disclosure } from "@/components/disclosure";
 import { startCheckout } from "./actions";
 
 const statusStyle: Record<string, string> = {
-  paid: "bg-mint",
-  partial: "bg-yellow",
+  paid: "bg-ok",
+  partial: "bg-warn",
   unpaid: "bg-danger",
 };
 
@@ -32,14 +32,14 @@ export default async function FeesPage(props: PageProps<"/fees">) {
     <div className="max-w-3xl space-y-6">
       <h1 className="heading">{isAdmin ? "Fees overview" : "Fees & payments"}</h1>
       {justPaid && !isAdmin && (
-        <p role="status" className="rounded-md border-2 border-ink bg-mint p-3 text-sm text-ok-ink">
+        <p role="status" className="rounded-lg border border-line bg-ok p-3 text-sm text-ok-ink">
           Payment submitted. Your fee updates as soon as Stripe confirms it (usually a few seconds).
           <AutoRefresh active={waiting} />
         </p>
       )}
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {([["Total due", due, "bg-sky"], ["Paid", paid, "bg-mint"], ["Balance", due - paid, due - paid > 0 ? "bg-yellow" : "bg-mint"]] as const).map(([label, value, bg]) => (
+        {([["Total due", due, "bg-info"], ["Paid", paid, "bg-ok"], ["Balance", due - paid, due - paid > 0 ? "bg-warn" : "bg-ok"]] as const).map(([label, value, bg]) => (
           <div key={label} className={`card p-4 ${bg}`}>
             <p className="text-xs font-bold uppercase tracking-wide">{label}</p>
             <p className="mt-1 text-xl font-bold">{money(value, cur)}</p>
@@ -48,8 +48,8 @@ export default async function FeesPage(props: PageProps<"/fees">) {
       </div>
 
       <section className="card">
-        <h2 className="border-b-2 border-ink p-4 font-bold">Fee records</h2>
-        <ul className="divide-y divide-ink/15">
+        <h2 className="border-b border-line p-4 font-bold">Fee records</h2>
+        <ul className="divide-y divide-line">
           {(fees ?? []).map((f) => (
             <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 p-4 text-sm">
               <div>
@@ -74,7 +74,7 @@ export default async function FeesPage(props: PageProps<"/fees">) {
       <Disclosure className="card p-4"
         title={<h2 className="section-title">Payment history</h2>}
         meta={<span className="text-xs muted">{payments?.[0] ? <>{plural(payments.length, "payment")} · latest {money(payments[0].amount, payments[0].currency)}</> : "No payments yet"}</span>}>
-        <ul className="divide-y divide-ink/15 border-t-2 border-ink">
+        <ul className="divide-y divide-line border-t border-line">
           {(payments ?? []).map((p) => (
             <li key={p.id} className="flex flex-wrap justify-between gap-2 py-3 text-sm">
               <span>{isAdmin && `${p.student?.full_name} · `}{p.fee?.description} · <LocalTime iso={p.paid_at} /></span>

@@ -38,7 +38,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
     <>
       {a.kind === "announcement" && (
         <>
-          <div className="rounded-md border-2 border-ink bg-cream p-3 text-sm">
+          <div className="rounded-lg border border-line bg-canvas p-3 text-sm">
             <p className="font-medium">{s(p.title)}</p>
             <p className="mt-1 text-ink/85">{s(p.body)}</p>
           </div>
@@ -68,7 +68,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
               </li>
             ))}
           </ul>
-          <div className="rounded-md border-2 border-ink bg-cream p-3 text-sm">
+          <div className="rounded-lg border border-line bg-canvas p-3 text-sm">
             <p className="text-xs text-ink/70">Draft feedback (sent to the student on approval)</p>
             <p className="mt-1 whitespace-pre-line">{s(p.feedback)}</p>
             <p className="mt-2 text-xs text-ink/70">Indicative grade (only you see this; you decide the final grade): {s(p.indicative_grade)}</p>
@@ -87,7 +87,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
               </li>
             ))}
           </ul>
-          <div className="rounded-md border-2 border-ink bg-cream p-3 text-sm">
+          <div className="rounded-lg border border-line bg-canvas p-3 text-sm">
             <p className="text-xs text-ink/70">Message</p>
             <p className="mt-1">{s(p.message)}</p>
           </div>
@@ -98,7 +98,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
       {a.kind === "assignment_draft" && (
         <>
           <p className="text-xs text-ink/70">From {s(p.file_name)}. Students will also see the original PDF.</p>
-          <div className="space-y-2 rounded-md border-2 border-ink bg-cream p-3 text-sm">
+          <div className="space-y-2 rounded-lg border border-line bg-canvas p-3 text-sm">
             <p className="font-medium">{s(p.title)}</p>
             <p className="max-h-48 overflow-y-auto whitespace-pre-line text-ink/85">{s(p.instructions)}</p>
             <div>
@@ -122,7 +122,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
   // In the inbox each draft folds to its title line; elsewhere it shows in full next to what it's about.
   if (fold) return <Disclosure open={fold.open} className="card p-5" title={heading} meta={tag}><div className="space-y-3">{body}</div></Disclosure>;
   return (
-    <section className={`card space-y-3 p-5 ${inline ? "bg-yellow/30" : ""}`}>
+    <section className={`card space-y-3 p-5 ${inline ? "border-ai-ink/20 bg-ai/40" : ""}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">{heading}{tag}</div>
       {body}
     </section>

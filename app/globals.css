@@ -1,70 +1,79 @@
 @import "tailwindcss";
 
-/* Neo-brutalism: cream paper, black ink, flat bright accents, hard shadows. */
+/* Academic Navy: navy sidebar, white cards on a soft slate canvas, one gold accent, soft status tints. */
 @theme inline {
-  --font-sans: var(--font-grotesk);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
 @theme {
-  --color-cream: #fff8e7;
-  --color-ink: #111111;
-  --color-yellow: #ffd23f;
-  --color-pink: #ff6b9d;
-  --color-mint: #7be0ad;
-  --color-sky: #74b9ff;
-  --color-danger: #ff5a5f;
-  /* Text-safe shades (the bright accents are for fills only). */
-  --color-danger-ink: #b3141a;
-  --color-ok-ink: #0b6e3c;
-  --color-warn-ink: #8a5200;
-  --shadow-brutal: 4px 4px 0 var(--color-ink);
-  --shadow-brutal-sm: 2px 2px 0 var(--color-ink);
+  --color-canvas: #f4f6fa;
+  --color-ink: #0f172a;
+  --color-line: #e2e8f0;
+  --color-navy: #1e3a5f;
+  --color-navy-dark: #162c48;
+  --color-gold: #c9962b;
+  /* Soft fills for chips, tickets and stat cards. */
+  --color-info: #dbeafe;
+  --color-ok: #dcfce7;
+  --color-warn: #fef3c7;
+  --color-ai: #ede9fe;
+  --color-danger: #fee2e2;
+  /* Text-safe shades. */
+  --color-danger-ink: #b91c1c;
+  --color-ok-ink: #15803d;
+  --color-warn-ink: #92400e;
+  --color-ai-ink: #5b21b6;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 1px 3px rgb(15 23 42 / 0.08);
+  --shadow-lift: 0 4px 12px rgb(15 23 42 / 0.1);
 }
 
 body {
-  @apply bg-cream text-ink font-sans;
+  @apply bg-canvas text-ink font-sans;
 }
 
 @utility card {
-  @apply rounded-md border-2 border-ink bg-white shadow-brutal;
+  @apply rounded-xl border border-line bg-white shadow-card;
 }
-/* A card that is a link: lifts on hover, presses on click. */
+/* A card that is a link: a gentle lift on hover. */
 @utility card-link {
-  @apply card transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_var(--color-ink)] active:translate-x-1 active:translate-y-1 active:shadow-none;
+  @apply card transition hover:border-navy/30 hover:shadow-lift;
 }
 @utility btn {
-  @apply inline-flex items-center justify-center gap-1 rounded-md border-2 border-ink bg-yellow px-4 py-2 text-sm font-bold shadow-brutal-sm transition-transform
-    hover:-translate-x-px hover:-translate-y-px hover:shadow-brutal active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
-    disabled:pointer-events-none disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-1 rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white shadow-card transition
+    hover:bg-navy-dark focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-navy/25 disabled:pointer-events-none disabled:opacity-50;
 }
 @utility btn-ghost {
-  @apply btn bg-white;
+  @apply inline-flex items-center justify-center gap-1 rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-ink shadow-card transition
+    hover:bg-canvas focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-navy/25 disabled:pointer-events-none disabled:opacity-50;
+}
+@utility btn-ok {
+  @apply btn bg-ok-ink hover:bg-ok-ink/90;
 }
 @utility btn-sm {
   @apply px-3 py-1 text-xs;
 }
 @utility field {
-  @apply w-full rounded-md border-2 border-ink bg-white px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-yellow;
+  @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-navy focus:ring-4 focus:ring-navy/15;
 }
 @utility badge {
-  @apply inline-block rounded-full border-2 border-ink px-2 py-0.5 text-xs font-bold;
+  @apply inline-block rounded-full px-2 py-0.5 text-xs font-medium text-ink ring-1 ring-ink/10 ring-inset;
 }
-/* "Prepared by X agent": the product's story, so it looks like a sticker. */
+/* "Prepared by X agent": AI work is always labelled, in one consistent violet. */
 @utility sticker {
-  @apply inline-flex items-center gap-1 rounded-md border-2 border-ink bg-pink px-2 py-0.5 text-xs font-bold uppercase tracking-wide shadow-brutal-sm;
+  @apply inline-flex items-center gap-1 rounded-full bg-ai px-2 py-0.5 text-xs font-semibold text-ai-ink;
 }
 @utility link {
-  @apply font-medium underline decoration-2 underline-offset-2 hover:bg-yellow;
+  @apply font-medium text-navy underline decoration-navy/30 underline-offset-2 hover:decoration-navy;
 }
 @utility muted {
-  @apply text-ink/70;
+  @apply text-ink/65;
 }
 @utility heading {
-  @apply text-2xl font-bold tracking-tight;
+  @apply text-2xl font-bold tracking-tight text-ink;
 }
 @utility section-title {
-  @apply font-bold;
+  @apply font-semibold text-ink;
 }
 
 /* Collapsible sections (<details class="disclosure">): our own chevron instead of the browser marker. */

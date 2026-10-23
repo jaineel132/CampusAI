@@ -12,8 +12,8 @@ import { finishMaterial, retryMaterial, retrySummary, startMaterial } from "./ac
 
 const docStatus: Record<string, string> = {
   uploaded: "bg-white",
-  processing: "bg-yellow",
-  ready: "bg-mint",
+  processing: "bg-warn",
+  ready: "bg-ok",
   failed: "bg-danger",
 };
 
@@ -50,19 +50,19 @@ export default async function CoursesPage() {
         const assignments = c.assignments.toSorted((x, y) => x.due_at.localeCompare(y.due_at));
         return (
           <Disclosure key={c.id} open={busy} className="card p-4"
-            title={<span className="section-title"><span className="badge bg-sky">{c.code}</span> {c.name}</span>}
+            title={<span className="section-title"><span className="badge bg-info">{c.code}</span> {c.name}</span>}
             meta={<span className="text-xs muted">
               {c.professor?.full_name} · {plural(docs.length, "material")} · {plural(assignments.length, "assignment")}
               {!isStudent && ` · ${plural(c.enrollments?.[0]?.count ?? 0, "student")}`}
             </span>}>
-            <div className="space-y-3 border-t-2 border-ink pt-3">
-              <Disclosure open={busy} className="rounded-md border-2 border-ink bg-cream p-3"
-                title={<span className="font-bold">📚 Materials</span>} meta={<span className="badge bg-white">{docs.length}</span>}>
+            <div className="space-y-3 border-t border-line pt-3">
+              <Disclosure open={busy} className="rounded-lg border border-line bg-canvas p-3"
+                title={<span className="font-bold">Materials</span>} meta={<span className="badge bg-white">{docs.length}</span>}>
                 <ul className="space-y-2 text-sm">
                   {docs.map((d) => (
                     <li key={d.id}>
-                      <Disclosure open={needsLook(d)} className="rounded-md border-2 border-ink bg-white p-2"
-                        title={<span className="font-semibold">📄 {d.title}</span>}
+                      <Disclosure open={needsLook(d)} className="rounded-lg border border-line bg-white p-2"
+                        title={<span className="font-semibold">{d.title}</span>}
                         meta={<span className="flex items-center gap-2 text-xs muted">
                           {d.page_count && plural(d.page_count, "page")}
                           {!isStudent && <span className={`badge capitalize ${docStatus[d.status]}`}>{d.status}</span>}
@@ -95,8 +95,8 @@ export default async function CoursesPage() {
                 )}
               </Disclosure>
 
-              <Disclosure className="rounded-md border-2 border-ink bg-cream p-3"
-                title={<span className="font-bold">📝 Assignments</span>} meta={<span className="badge bg-white">{assignments.length}</span>}>
+              <Disclosure className="rounded-lg border border-line bg-canvas p-3"
+                title={<span className="font-bold">Assignments</span>} meta={<span className="badge bg-white">{assignments.length}</span>}>
                 <ul className="space-y-2 text-sm">
                   {assignments.map((a) => (
                     <li key={a.id}>

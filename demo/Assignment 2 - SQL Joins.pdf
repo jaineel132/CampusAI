@@ -15,13 +15,13 @@ endobj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
 endobj
 6 0 obj
-<< /Length 1564 >>
+<< /Length 1568 >>
 stream
 BT /F2 16 Tf 50 775 Td (CS301 Database Management Systems) Tj ET
 BT /F2 14 Tf 50 752 Td (Assignment 2: SQL Joins and Aggregation) Tj ET
 BT /F1 11 Tf 50 732 Td (Northfield Institute of Technology - 2026 Odd Semester - Dr. Kavita Mehta) Tj ET
 BT /F2 12 Tf 50 691 Td (Submission deadline: on or before 6 November 2026, 11:59 PM) Tj ET
-BT /F1 11 Tf 50 671 Td (Submit one PDF on Kibo. Late submissions are marked late.) Tj ET
+BT /F1 11 Tf 50 671 Td (Submit one PDF on CampusAI. Late submissions are marked late.) Tj ET
 BT /F2 12 Tf 50 630 Td (Task) Tj ET
 BT /F1 11 Tf 50 610 Td (Use the schema Student\(sid, name, dept\), Course\(cid, title, credits\),) Tj ET
 BT /F1 11 Tf 50 590 Td (Enrollment\(sid, cid, grade\). Write and explain SQL for each question.) Tj ET
@@ -48,5 +48,5 @@ xref
 trailer
 << /Size 7 /Root 1 0 R >>
 startxref
-2012
+2016
 %%EOF

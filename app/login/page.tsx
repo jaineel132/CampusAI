@@ -3,13 +3,13 @@
 import { useActionState, useState } from "react";
 import { signIn } from "@/app/actions";
 
-const DEMO_PASSWORD = "Kibo-demo-2026";
+const DEMO_PASSWORD = "CampusAI-demo-2026";
 const demoAccounts = [
-  { label: "Student — Aarav (Northfield)", email: "aarav@northfield.demo", colour: "bg-yellow" },
-  { label: "Student B — Diya (Northfield)", email: "diya@northfield.demo", colour: "bg-yellow" },
-  { label: "Professor — Dr. Mehta (Northfield)", email: "prof.mehta@northfield.demo", colour: "bg-pink" },
-  { label: "Admin — Rohan (Northfield)", email: "admin@northfield.demo", colour: "bg-mint" },
-  { label: "Student — Jordan (Lakeside, US)", email: "jordan@lakeside.demo", colour: "bg-sky" },
+  { label: "Student — Aarav (Northfield)", email: "aarav@northfield.demo", colour: "bg-info" },
+  { label: "Student B — Diya (Northfield)", email: "diya@northfield.demo", colour: "bg-info" },
+  { label: "Professor — Dr. Mehta (Northfield)", email: "prof.mehta@northfield.demo", colour: "bg-ai" },
+  { label: "Admin — Rohan (Northfield)", email: "admin@northfield.demo", colour: "bg-ok" },
+  { label: "Student — Jordan (Lakeside, US)", email: "jordan@lakeside.demo", colour: "bg-info" },
 ];
 
 export default function LoginPage() {
@@ -21,7 +21,7 @@ export default function LoginPage() {
     <main className="flex flex-1 items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
-          <h1 className="inline-block -rotate-2 rounded-md border-2 border-ink bg-yellow px-4 py-1 text-4xl font-bold tracking-tight shadow-brutal">Kibo</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-navy">Campus<span className="text-gold">AI</span></h1>
           <p className="mt-4 text-sm font-medium muted">One college app. AI agents do the busywork.</p>
         </div>
 
@@ -46,7 +46,7 @@ export default function LoginPage() {
           <p className="text-xs font-bold uppercase tracking-wide">Demo accounts (click to fill)</p>
           {demoAccounts.map((a) => (
             <button key={a.email} type="button" onClick={() => { setEmail(a.email); setPassword(DEMO_PASSWORD); }}
-              className={`btn w-full justify-start text-left ${a.colour}`}>
+              className={`btn-ghost w-full justify-start text-left ${a.colour}`}>
               {a.label}
             </button>
           ))}

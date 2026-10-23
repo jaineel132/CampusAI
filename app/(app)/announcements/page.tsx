@@ -51,10 +51,10 @@ export default async function AnnouncementsPage() {
       <ul className="space-y-3">
         {(list ?? []).map((a) => (
           <li key={a.id} className="card space-y-1 p-4 text-sm">
-            <p className="font-bold"><span className={`badge ${a.course?.code ? "bg-sky" : "bg-mint"}`}>{a.course?.code ?? "College"}</span> {a.title}</p>
+            <p className="font-bold"><span className={`badge ${a.course?.code ? "bg-info" : "bg-ok"}`}>{a.course?.code ?? "College"}</span> {a.title}</p>
             <p className="text-ink/85">{a.body}</p>
             <p className="text-xs text-ink/60">
-              {a.author?.full_name} · <LocalTime iso={a.published_at} />{a.approval_id && <> · <span className="sticker">🤖 drafted by agent, approved</span></>}
+              {a.author?.full_name} · <LocalTime iso={a.published_at} />{a.approval_id && <> · <span className="sticker">✦ drafted by agent, approved</span></>}
             </p>
           </li>
         ))}
