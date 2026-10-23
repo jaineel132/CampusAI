@@ -145,21 +145,6 @@ Small runnable checks, no framework. `test:chunk` and `test:access` run on their
 
 Run `npm run seed` again after `test:webhook` or `test:cron`.
 
-## Demo script (≈ 5 min, on the live URL)
-
-Run `npm run seed` first so the data and deadlines are fresh. Each step is one role.
-
-1. **Intro (30 s):** college portals don't talk to each other, and plain chatbots can't see records or act safely. CampusAI is one app for students, professors and admins, where agents do the busywork and humans approve.
-2. **Professor, notes (40 s):** My courses → DBMS → Materials → upload `demo/Unit 3 - Normalization.pdf` → Processing → Ready → the Materials agent's summary → approve the announcement draft right under the file.
-3. **Professor, assignment (40 s):** Assignments → New assignment → upload `demo/Assignment 2 - SQL Joins.pdf` → the Assignment agent drafts the title, questions, rubric and the 6 Nov deadline → approve.
-4. **Student, Aarav (60 s):** the dashboard shows the Planner's week plan and the fee balance. Ask the assistant "Explain 3NF from our notes" (answer cites *Unit 3 - Normalization.pdf, p. 3*), then "What should I focus on this week?"
-5. **Student submits (40 s):** Assignments → Normalization Case Study → submit any PDF → the rubric pre-check appears in seconds.
-6. **Professor reviews (30 s):** open the assignment → the submission shows "draft to review" → edit if needed, approve → Aarav sees the feedback.
-7. **Student pays and rates (30 s):** pay tuition with test card `4242 4242 4242 4242` → Paid with a receipt → rate the DBMS professor. The professor sees only the average and themes.
-8. **Admin (30 s):** Weekly report → Generate report now → approve the fee reminder batch and the announcement → reminders appear in the students' activity feeds.
-9. **Security (20 s):** as Diya, ask the assistant for Aarav's fees → refused. Log in as Jordan: same app, $ and GPA, none of Northfield's data.
-10. **Close (20 s):** the architecture (above): one agent runtime, RLS on every table, the webhook is the only writer of payments. Then what's next.
-
 ## Design decisions
 
 - **Chunks are ~450 tokens.** The free `gte-small` embedding model reads at most 512 tokens.
