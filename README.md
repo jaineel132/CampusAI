@@ -129,7 +129,8 @@ There are **8 agents**, grouped by who they work for. All run on one runtime (`l
 | ![Login with one-click demo accounts](docs/screenshots/01-login.jpg) **Login** with one-click demo accounts for every role | ![Student dashboard](docs/screenshots/02-student-dashboard.jpg) **Student dashboard**: the Planner agent ranks the week from real deadlines and fees |
 | ![Materials agent summary and announcement draft](docs/screenshots/03-materials-agent.jpg) **Materials agent**: summary of uploaded notes and an announcement draft, approved in place | ![Assignment agent draft](docs/screenshots/04-assignment-agent.jpg) **Assignment agent**: questions, rubric and the exact deadline extracted from the professor's PDF |
 | ![Assistant answering with page sources](docs/screenshots/05-assistant-rag.jpg) **Assistant**: answers from the course notes, citing the document and page | ![Rubric pre-check](docs/screenshots/06-submission-precheck.jpg) **Submission agent**: rubric pre-check within seconds of submitting |
-| ![Weekly college report](docs/screenshots/07-weekly-report.jpg) **Report agent**: the weekly college report with fee reminders and an announcement to approve | ![Assistant refusing another student's data](docs/screenshots/08-security-refusal.jpg) **Security**: Diya asks for Aarav's fees and is refused; she only sees her own |
+| ![Weekly college report](docs/screenshots/07-weekly-report.jpg) **Report agent**: the weekly college report with fee reminders and an announcement to approve | ![Fee paid through Stripe test checkout](docs/screenshots/09-stripe-payment.jpg) **Fees**: paid with Stripe (test mode). Only the verified webhook can mark a fee paid, and it is recorded once even if Stripe retries |
+| ![Assistant refusing another student's data](docs/screenshots/08-security-refusal.jpg) **Security**: Diya asks for Aarav's fees and is refused; she only sees her own | |
 
 ## Architecture
 
