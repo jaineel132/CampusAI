@@ -4,7 +4,7 @@
 
 College systems are scattered: fees in one portal, notes in another, assignments in a third, and nobody tells you what's due. CampusAI puts everything in one dashboard, and **8 AI agents** handle the repetitive work. They pre-check submissions against the rubric, turn an assignment PDF into a ready-to-publish assignment, summarise uploaded notes, plan each student's week, send reminders, and write the admin's weekly report. **A human approves anything that is published, sent or changes a record.**
 
-**[▶ Live demo](https://campusai-ashy.vercel.app)** · [Demo accounts](#demo-accounts) · [Screenshots](#screenshots) · [How to run it](#getting-started)
+**[▶ Live demo](https://campusai-ashy.vercel.app)** · [Try it in 5 minutes](#try-it-in-5-minutes) · [Demo accounts](#demo-accounts) · [Screenshots](#screenshots) · [How to run it](#getting-started)
 
 ![Student dashboard: the Planner agent's week plan and the fee balance](docs/screenshots/02-student-dashboard.jpg)
 
@@ -18,17 +18,48 @@ College systems are scattered: fees in one portal, notes in another, assignments
 
 ## Table of contents
 
-1. [Demo accounts](#demo-accounts)
-2. [Features by role](#features-by-role)
-3. [The agents](#the-agents)
-4. [Screenshots](#screenshots)
-5. [Architecture](#architecture)
-6. [Security](#security)
-7. [Getting started](#getting-started)
-8. [Environment variables](#environment-variables)
-9. [Tests](#tests)
-10. [Design decisions](#design-decisions)
-11. [Next steps](#next-steps)
+1. [Try it in 5 minutes](#try-it-in-5-minutes)
+2. [Demo accounts](#demo-accounts)
+3. [Features by role](#features-by-role)
+4. [The agents](#the-agents)
+5. [Screenshots](#screenshots)
+6. [Architecture](#architecture)
+7. [Security](#security)
+8. [Getting started](#getting-started)
+9. [Environment variables](#environment-variables)
+10. [Tests](#tests)
+11. [Design decisions](#design-decisions)
+12. [Next steps](#next-steps)
+
+## Try it in 5 minutes
+
+Open the **[live demo](https://campusai-ashy.vercel.app)** and use the one-click demo accounts on the login page (password `CampusAI-demo-2026`). Download the two sample PDFs from [`demo/`](demo) first. Each step is one role; use a second browser or an incognito window to stay logged in as two people at once.
+
+**1. Professor: publish notes** (Dr. Mehta)
+My courses & uploads → DBMS → Materials → upload `Unit 3 - Normalization.pdf`. It goes Processing → Ready, the **Materials agent** writes a summary and drafts an announcement. Click **Approve** right under the file.
+
+**2. Professor: publish an assignment from a PDF**
+Assignments → New assignment → upload `Assignment 2 - SQL Joins.pdf` under CS301. The **Assignment agent** drafts the title, questions, rubric and the 6 Nov deadline, quoting the PDF. Check it and **Approve**.
+
+**3. Student: see the week and ask questions** (Aarav)
+The dashboard shows the **Planner agent's** ranked plan and the fee balance. Open **✦ Ask CampusAI** and try "Explain 3NF from our notes" (the answer cites the PDF and page) or "What should I focus on this week?".
+
+**4. Student: submit work**
+Assignments → Normalization Case Study → submit any PDF or TXT. The **Submission agent's** rubric pre-check appears within seconds.
+
+**5. Professor: give feedback**
+Open the same assignment as Dr. Mehta. The submission shows *draft to review*: edit the feedback if you like, then **Approve**. Aarav now sees it.
+
+**6. Student: pay and rate**
+Fees & payments → Pay with Stripe's test card `4242 4242 4242 4242` (any future date, any CVC) → the fee flips to Paid. Then Rate professors → give DBMS a rating. The professor only ever sees the average and anonymous themes.
+
+**7. Admin: weekly report** (Rohan)
+Weekly report → **Generate report now**. The **Report agent** summarises fees, late work and ratings from the database, and prepares a fee-reminder batch and an announcement. Approve them; the reminders land in students' activity feeds.
+
+**8. Check the security**
+As Diya, ask the assistant "How much does Aarav Shah owe in fees?" (refused). Log in as Jordan: same app, a different college with $ and GPA, and none of Northfield's data.
+
+Everything you do is real (it's saved in the database), so other reviewers may see your test submissions or ratings. Running locally, `npm run seed` resets all demo data.
 
 ## Demo accounts
 
