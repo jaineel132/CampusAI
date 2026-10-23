@@ -2,7 +2,7 @@
 
 **One college app where AI agents do the busywork, for students, professors and admins.**
 
-College systems are scattered: fees in one portal, notes in another, assignments in a third, and nobody tells you what's due. CampusAI puts everything in one dashboard, and **8 agents** handle the repetitive work. They pre-check submissions against the rubric, turn an assignment PDF into a ready-to-publish assignment, summarise uploaded notes, plan each student's week, send reminders, and write the admin's weekly report. **A human approves anything that is published, sent or changes a record.**
+College systems are scattered: fees in one portal, notes in another, assignments in a third, and nobody tells you what's due. CampusAI puts everything in one dashboard, and **8 agents** handle the repetitive work. They pre-check submissions against the rubric, turn an assignment PDF into a ready-to-publish assignment, summarise uploaded notes, plan each student's week, send reminders, and write the admin's weekly report. **A human approves anything that is published, sent or changes a record.** It is **built for many colleges at once**: each college has its own currency, term system and grading scale, and its data is fully isolated from every other college.
 
 **[▶ Live demo](https://campusai-ashy.vercel.app)** · [Try it in 5 minutes](#try-it-in-5-minutes) · [Demo accounts](#demo-accounts) · [Screenshots](#screenshots) · [How to run it](#getting-started)
 
@@ -13,7 +13,8 @@ College systems are scattered: fees in one portal, notes in another, assignments
 - **One app, three roles.** Students pay fees, read materials, submit work and rate professors. Professors publish materials and assignments and give feedback. Admins see a weekly college report and chase fees.
 - **AI-native, not a chatbot bolted on.** Agents react to events (an upload, a submission, a rating, a schedule) and prepare the work. People just review and approve.
 - **Facts come from the database, never from the AI.** Deadlines, fees and figures are loaded by code; the model only reasons and writes. The Reminder agent uses no AI at all.
-- **Secure by design.** Row-level security on every table, multiple colleges fully isolated, and only Stripe's verified webhook can mark a fee paid.
+- **Multi-college from day one.** One deployment serves many colleges. Each has its own settings (₹ or $, semesters or quarters, CGPA 10 or GPA 4.0), and every table carries the college's id, so data never crosses between colleges. The demo has two: Northfield (India) and Lakeside (US). Log in as Jordan to see the other one.
+- **Secure by design.** Row-level security on every table checks the college first, then the role, and only Stripe's verified webhook can mark a fee paid.
 - **Built with** Next.js 16 · Supabase (Postgres, pgvector, Auth, Storage) · Vercel AI SDK + Groq · Stripe · Vercel.
 
 ## Table of contents
@@ -29,7 +30,7 @@ College systems are scattered: fees in one portal, notes in another, assignments
 9. [Environment variables](#environment-variables)
 10. [Tests](#tests)
 11. [Design decisions](#design-decisions)
-12. [Next steps](#next-steps)
+12. [Future scope](#future-scope)
 
 ## Try it in 5 minutes
 
@@ -222,6 +223,29 @@ Run `npm run seed` again after `test:webhook` or `test:cron`.
 - **Groq free tier.** Agent inputs are capped at ~14k characters. The model is one line in `lib/ai.ts`.
 - **Ratings anonymity** is enforced structurally (no professor access to rows, themes paraphrased). A minimum-count threshold before showing themes is the next step for real classes.
 
-## Next steps
+## Future scope
 
-Student self-signup and CSV import, email/SMS notifications, OCR for scanned PDFs, gradebook, ERP integration, batching the Feedback agent on a schedule.
+The MVP proves the core idea: agents prepare the work, people approve it. These are the next steps to take it to a real college, in rough priority order.
+
+**More busywork for agents**
+- **Quiz and practice-question agent:** turns uploaded notes into practice questions for students and quiz drafts for professors (approved before release).
+- **Early-warning agent:** spots students falling behind (missed deadlines, overdue fees, failing pre-checks) and drafts a check-in for their mentor.
+- **Attendance and timetable agent:** keeps class schedules, room changes and attendance in the same dashboard, and warns students before they drop below the attendance limit.
+- **Grade release:** a full gradebook where approved feedback and grades flow into the student's record and transcript.
+
+**Reaching people where they are**
+- **Notifications by email, SMS and WhatsApp,** not only in the app, with quiet hours and a daily digest.
+- **Mobile app** (installable PWA first), so reminders and approvals work from a phone.
+- **Multilingual answers,** so the assistant can reply in the student's language.
+
+**Ready for a whole college**
+- **Onboarding at scale:** student self-signup, CSV import of courses and enrollments, and sign-in with the college's Google or Microsoft accounts.
+- **Integrations:** sync with existing ERP and LMS systems (Moodle, Google Classroom) instead of replacing them on day one.
+- **Live payments:** move Stripe from test mode to live, with refunds, instalments and receipts the finance office can export (plus Razorpay/UPI for Indian colleges).
+- **Better documents:** OCR for scanned PDFs and handwritten notes, so every upload can be searched.
+
+**Trust and quality**
+- **Agent quality checks:** a test set of real submissions and briefs to measure each agent's accuracy before changing models or prompts.
+- **Stronger anonymity for ratings:** show themes only after a minimum number of ratings, so no single student can be identified.
+- **Admin audit view:** one page showing every agent run, what it used and who approved it (already logged in `agent_runs`).
+- **Cost control at scale:** batch the Feedback agent on a schedule and cache repeated questions to keep AI costs low.
