@@ -71,7 +71,6 @@ All accounts use the password **`CampusAI-demo-2026`**. The login page has one-c
 | Professor | `prof.mehta@northfield.demo` | Northfield. Teaches DBMS (CS301) and OS (CS302) |
 | Admin | `admin@northfield.demo` | Northfield |
 | Student | `jordan@lakeside.demo` | Lakeside College (US: $, quarters, GPA 4.0) |
-| Professor | `prof.taylor@lakeside.demo` | Lakeside |
 
 All data is fictional. `npm run seed` resets it and moves every deadline relative to today. Two sample PDFs for trying the agents are in [`demo/`](demo).
 
