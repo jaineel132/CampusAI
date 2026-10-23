@@ -39,12 +39,12 @@ export default async function OpsPage() {
     <div className="max-w-4xl space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="heading">Ops digest</h1>
+          <h1 className="heading">Weekly college report</h1>
           <p className="text-sm text-ink/70">
-            {run ? <>Generated <LocalTime iso={run.started_at} /> ({run.trigger === "schedule" ? "weekly schedule" : "on request"})</> : "No digest yet."}
+            {run ? <>Generated <LocalTime iso={run.started_at} /> ({run.trigger === "schedule" ? "weekly schedule" : "on request"})</> : "No report yet."}
           </p>
         </div>
-        <form action={runNow}><SubmitButton pending="Ops agent is working…">Run digest now</SubmitButton></form>
+        <form action={runNow}><SubmitButton pending="Report agent is working…">Generate report now</SubmitButton></form>
       </div>
 
       {run?.status === "failed" && (
@@ -57,7 +57,7 @@ export default async function OpsPage() {
         <section className={`${card} space-y-2 bg-warn`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-bold">{d.headline}</h2>
-            <AgentLabel name="Ops agent" />
+            <AgentLabel name="Report agent" />
           </div>
           <p className="text-sm">{d.narrative}</p>
           {!!d.suggested_actions.length && (

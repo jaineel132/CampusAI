@@ -30,7 +30,7 @@ Rules:
 - ${me.role === "student"
       ? "You only see this student's own records. Refuse requests about other students' fees, grades or submissions."
       : `You see data within this ${me.role}'s scope; the tools enforce it.`}
-- The weekly ops digest is for admins only${me.role === "admin" ? " (use get_ops_digest)" : "; refuse if asked"}.
+- The weekly college report is for admins only${me.role === "admin" ? " (use get_ops_digest)" : "; refuse if asked"}.
 - For weekly plans: rank unsubmitted assignments by due date, mention fees due soon, and include the links tools return.
 - Be concise. Plain text with short "-" bullets; no tables.`,
     messages: await convertToModelMessages(messages),

@@ -72,11 +72,11 @@ export async function assistantTools(me: Me) {
   return {
     ...tools,
     get_ops_digest: tool({
-      description: "Latest weekly ops digest for the college: outstanding fees, late/missing submissions, rating themes.",
+      description: "Latest weekly college report: outstanding fees, late/missing submissions, rating themes.",
       inputSchema: z.object({}),
       execute: async () => {
         const { data } = await db.from("agent_runs").select("input, output, started_at, status").eq("agent", "ops").order("started_at", { ascending: false }).limit(1).maybeSingle();
-        return data ? { generated_at: data.started_at, figures: data.input, digest: data.output, link: "/ops" } : { error: "No digest yet. Run one from /ops." };
+        return data ? { generated_at: data.started_at, figures: data.input, digest: data.output, link: "/ops" } : { error: "No report yet. Generate one from /ops." };
       },
     }),
   };

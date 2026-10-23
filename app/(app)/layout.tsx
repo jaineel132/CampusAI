@@ -26,7 +26,7 @@ const nav: Record<Role, { href: string; label: string }[]> = {
   ],
   admin: [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/ops", label: "Ops digest" },
+    { href: "/ops", label: "Weekly report" },
     { href: "/fees", label: "Fees overview" },
     { href: "/inbox", label: "Approval inbox" },
     { href: "/ratings", label: "Ratings & themes" },

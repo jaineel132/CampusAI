@@ -8,7 +8,7 @@ import { ApprovalActions, type EditableField } from "@/app/(app)/inbox/approval-
 const agentFor: Record<string, string> = {
   feedback_draft: "Submission agent",
   announcement: "Materials agent",
-  reminder_batch: "Ops agent",
+  reminder_batch: "Report agent",
   assignment_draft: "Assignment agent",
 };
 export const approvalTitle: Record<string, string> = {
@@ -33,7 +33,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
       {inline ? " · waiting for your approval" : ` · ${s(p.course_code) || "College"}`}
     </h2>
   );
-  const tag = <span className="flex items-center gap-2 text-xs text-ink/70"><AgentLabel name={p.source === "ops" ? "Ops agent" : agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>;
+  const tag = <span className="flex items-center gap-2 text-xs text-ink/70"><AgentLabel name={p.source === "ops" ? "Report agent" : agentFor[a.kind]} /> <LocalTime iso={a.created_at} /></span>;
   const body = (
     <>
       {a.kind === "announcement" && (
@@ -42,7 +42,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
             <p className="font-medium">{s(p.title)}</p>
             <p className="mt-1 text-ink/85">{s(p.body)}</p>
           </div>
-          {!inline && p.source === "ops" && <p className="text-xs text-ink/70">Data used: the latest <a href="/ops" className="link">Ops digest</a>. Goes to the whole college.</p>}
+          {!inline && p.source === "ops" && <p className="text-xs text-ink/70">Data used: the latest <a href="/ops" className="link">weekly report</a>. Goes to the whole college.</p>}
           {!inline && !!p.document_id && (
             <p className="text-xs text-ink/70">
               Data used: <a href={`/files/document/${s(p.document_id)}`} target="_blank" className="link">{s(p.document_title)}</a>
@@ -91,7 +91,7 @@ export function ApprovalCard({ a, inline = false, fold }: { a: PendingApproval; 
             <p className="text-xs text-ink/70">Message</p>
             <p className="mt-1">{s(p.message)}</p>
           </div>
-          {!inline && <p className="text-xs text-ink/70">Data used: fee records from the latest <a href="/ops" className="link">Ops digest</a>.</p>}
+          {!inline && <p className="text-xs text-ink/70">Data used: fee records from the latest <a href="/ops" className="link">weekly report</a>.</p>}
         </>
       )}
 

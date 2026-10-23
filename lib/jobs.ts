@@ -65,7 +65,7 @@ export async function runReminders() {
   return results;
 }
 
-// ───────── Ops agent (weekly or on admin request) ─────────
+// ───────── Report agent: weekly college report (weekly or on admin request) ─────────
 
 export type OpsFigures = {
   currency: string;
@@ -126,7 +126,7 @@ export async function runOpsDigest(institutionId: string, trigger: "schedule" | 
     institutionId,
     userId: requestedBy,
     input: figures as unknown as Json, // the digest page reads figures from here, even if the model call fails
-    instructions: `You are the Ops agent for a college admin. Write a short weekly digest from the figures provided.
+    instructions: `You are the Report agent for a college admin. Write a short weekly report from the figures provided.
 - Use ONLY the numbers given; never estimate or add figures. Amounts are in ${figures.currency}.
 - Name the most urgent follow-ups. Be factual and brief. Refer to people by name, not pronouns.
 - Suggested actions must be things the admin can do in CampusAI: approve the fee reminder batch, approve the announcement draft, or follow up with a named student or professor. No emails, no system changes.

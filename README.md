@@ -24,9 +24,9 @@ All data is fictional. `npm run seed` resets it and moves every deadline relativ
 | Student | Professor | Admin |
 | --- | --- | --- |
 | Dashboard: Planner agent's week plan, deadlines with status, fee balance, agent activity feed, announcements | Dashboard: courses, recent submissions | Dashboard: outstanding fees, students, late submissions |
-| Courses & materials (enrolled only) | My courses & uploads (PDF/TXT → indexed → summarised) | Ops digest (weekly, or on demand) |
+| Courses & materials (enrolled only) | My courses & uploads (PDF/TXT → indexed → summarised) | Weekly college report (every Monday, or on demand) |
 | Assignments: open the brief (and the original PDF), submit a file, get an instant rubric pre-check, then the professor's feedback | Assignments & submissions: upload the assignment PDF (agent drafts it) or create by hand, review, see pre-checks | Fees overview (read-only) |
-| Fees & payments: Stripe test checkout, history, receipts | Approval inbox: assignment, feedback and announcement drafts (each can also be approved right where it appears) | Approval inbox: fee reminder batches |
+| Fees & payments: Stripe test checkout, history, receipts | Approval inbox: assignment, feedback and announcement drafts (each can also be approved right where it appears) | Approval inbox: fee reminder batches and college announcements |
 | Rate professors (anonymous, one per course per term) | Ratings & themes (aggregates only) | Ratings & themes (college-wide) |
 | Assistant (side panel on every page) | Assistant · Announcements | Assistant · Announcements (college-wide) |
 
@@ -34,16 +34,36 @@ All data is fictional. `npm run seed` resets it and moves every deadline relativ
 
 All agents run on one runtime (`lib/agent.ts`). It logs every run to `agent_runs`, calls the model with a fixed output schema, and records failures so the UI shows "failed — retry" instead of pretending. Facts are loaded from the database by our code, never invented by the model.
 
+There are **8 agents**, grouped by who they work for. A human approves anything that is published, sent or changes a record.
+
+### For students
+
 | Agent | Trigger | What it does | Human step |
 | --- | --- | --- | --- |
-| **Submission** | Student submits | Reads the file and checks it against the brief and rubric (met / partial / missing per item). Shows the student a pre-check within seconds and drafts feedback plus an indicative grade in the college's own scale | Professor approves or edits the feedback. The final grade stays human |
+| **Planner** | Dashboard load (cached 12 h), refresh, or chat | Ranked weekly plan from real deadlines, submission status, fees and new materials. Any link not taken from the facts is dropped | None |
+| **Submission** | Student submits | Reads the file and checks it against the brief and rubric (met / partial / missing per item). The student sees this pre-check within seconds. It also drafts feedback and an indicative grade for the professor (see below) | Professor approves or edits the feedback. The final grade stays human |
+| **Reminder** | Daily cron (08:00 IST) | Assignments due within 48 h with no submission, and unpaid fees due within 7 days, become reminders in the student's feed. Deduplicated per day. **Rule-based (no LLM), so it can never invent a deadline** | None (informational) |
+
+### For professors
+
+| Agent | Trigger | What it does | Human step |
+| --- | --- | --- | --- |
 | **Assignment** | Professor uploads the assignment PDF | Drafts the title, full instructions, rubric (from the PDF's marking scheme, or derived from its requirements and flagged) and the deadline exactly as the PDF states it, quoting its wording. No deadline in the PDF → none invented | Professor approves or edits; the assignment is created with the original PDF attached |
 | **Materials** | Professor uploads notes | After indexing, writes a summary and drafts a "new material" announcement | Professor approves before students see it |
-| **Reminder** | Daily cron (08:00 IST) | Assignments due within 48 h with no submission, and unpaid fees due within 7 days, become reminders in the student's feed. Deduplicated per day. **Rule-based (no LLM), so it can never invent a deadline** | None (informational) |
+| **Submission** (feedback side) | Student submits | The professor gets the rubric check, a feedback draft and an indicative grade in the college's own scale | Approve or edit, right under the submission or in the inbox |
 | **Feedback** | New or edited rating | Groups anonymous comments into themes (paraphrased; it never receives student ids) | None (read-only) |
-| **Ops** | Weekly cron (Mon), or "Run digest now" | Outstanding fees, late/missing submissions and rating themes. **Numbers come straight from SQL**; the model only writes the narrative. Prepares a fee-reminder batch and, when useful, a college announcement draft (facts from the figures only) | Admin approves both, right under the digest or in the inbox |
-| **Planner** | Dashboard load (cached 12 h), refresh, or chat | Ranked weekly plan from real deadlines, submission status, fees and new materials. Any link not taken from the facts is dropped | None |
-| **CampusAI Assistant** | Chat, any role | Answers from records and course documents with page sources. Read-only tools, scoped by RLS; admin-only digest tool | Refuses anything that would change a record |
+
+### For the college admin
+
+| Agent | Trigger | What it does | Human step |
+| --- | --- | --- | --- |
+| **Report** | Weekly cron (Mon), or "Generate report now" | The weekly college report: outstanding fees, late/missing submissions and rating themes. **Numbers come straight from SQL**; the model only writes the summary. Prepares a fee-reminder batch and, when useful, a college announcement draft (facts from the figures only) | Admin approves both, right under the report or in the inbox |
+
+### For everyone
+
+| Agent | Trigger | What it does | Human step |
+| --- | --- | --- | --- |
+| **CampusAI Assistant** | Chat, any role (side panel on every page) | Answers from the user's own records and course documents, citing document and page. Read-only tools, scoped by RLS; the report tool is admin-only | Refuses anything that would change a record |
 
 ## Architecture
 
@@ -53,7 +73,7 @@ Browser ──► Next.js on Vercel (App Router, Server Components, Server Actio
               │
               ├─ after()  ─► event agents (assignment, submission, materials, feedback, planner) ─► agent_runs + approvals
               ├─ /api/chat ─► CampusAI Assistant (AI SDK streamText + typed Zod tools)
-              ├─ /api/cron/daily · /api/cron/weekly ─► Reminder + Ops agents (Vercel Cron, Bearer CRON_SECRET)
+              ├─ /api/cron/daily · /api/cron/weekly ─► Reminder + Report agents (Vercel Cron, Bearer CRON_SECRET)
               └─ /api/stripe/webhook ─► the ONLY writer of payments (verified signature, idempotent)
 
 Supabase: Postgres + pgvector + RLS · Auth · private Storage buckets · Edge Function `embed` (gte-small)
@@ -70,7 +90,7 @@ AI: Groq (openai/gpt-oss-120b) behind lib/ai.ts, the one provider module
 | Payments | Stripe Checkout (test mode) + webhook |
 | Jobs | Next.js `after()` for event agents, Vercel Cron for scheduled agents |
 
-**Key files:** `lib/agent.ts` (runtime) · `lib/agents.ts` (Assignment, Submission, Materials, Feedback, Planner) · `lib/jobs.ts` (Reminder, Ops) · `lib/tools.ts` (assistant tools) · `lib/ingest.ts` + `lib/chunk.ts` (RAG ingestion) · `app/(app)/inbox/actions.ts` (approval effects) · `app/api/stripe/webhook/route.ts`.
+**Key files:** `lib/agent.ts` (runtime) · `lib/agents.ts` (Assignment, Submission, Materials, Feedback, Planner) · `lib/jobs.ts` (Reminder, Report) · `lib/tools.ts` (assistant tools) · `lib/ingest.ts` + `lib/chunk.ts` (RAG ingestion) · `app/(app)/inbox/actions.ts` (approval effects) · `app/api/stripe/webhook/route.ts`.
 
 **Tables:** `institutions` (each college's settings) → `profiles`, `courses`, `enrollments`, `assignments`, `submissions`, `documents`, `document_chunks`, `fee_records`, `payments`, `announcements`, `professor_ratings`, `rating_summaries`, `agent_runs`, `approvals`, `notifications`. Every table carries `institution_id`.
 
@@ -118,26 +138,27 @@ Small runnable checks, no framework. `test:chunk` and `test:access` run on their
 | Script | Proves |
 | --- | --- |
 | `npm run test:access` | Student B can't read Student A's fees or submissions. College B sees nothing of College A. RAG search, announcements, approvals and agent runs are scoped. Professors never see raw ratings. One rating per course per term. An assignment can only attach a PDF from its own course |
-| `npm run test:assistant` | Through the assistant: Student B asking for Student A's fees or submissions, a student asking for the ops digest, "mark my fees paid", and College B asking about College A are all refused (checked on tool outputs) |
+| `npm run test:assistant` | Through the assistant: Student B asking for Student A's fees or submissions, a student asking for the weekly college report, "mark my fees paid", and College B asking about College A are all refused (checked on tool outputs) |
 | `npm run test:webhook` | Forged signatures rejected, other apps' payments ignored, payments recorded once, replays not double-counted |
-| `npm run test:cron` | Cron requires the secret, reminders match seeded deadlines, no duplicates, digest generated for both colleges |
+| `npm run test:cron` | Cron requires the secret, reminders match seeded deadlines, no duplicates, weekly report generated for both colleges |
 | `npm run test:chunk` | RAG chunking keeps page numbers and overlap, and drops no words |
 
 Run `npm run seed` again after `test:webhook` or `test:cron`.
 
 ## Demo script (≈ 5 min, on the live URL)
 
-1. **Problem:** portals for deadlines, fees and notes that don't talk to each other; plain chatbots can't see records or act safely.
-2. **Professor** uploads `demo/Unit 3 - Normalization.pdf` to DBMS → Processing → Ready → Materials agent summary → **Approval inbox** → edit and approve the announcement.
-3. **Student (Aarav) dashboard:** Planner's week plan, deadlines, fee balance, agent activity, the new announcement.
-4. **Assistant:** "Explain 3NF from our notes" → answer with *Unit 3 - Normalization.pdf, p. 3*.
-5. "What should I focus on this week?" → ranked plan from real deadlines.
-6. **Professor** uploads `demo/Assignment 2 - SQL Joins.pdf` on Assignments → the Assignment agent drafts title, questions, rubric and the 6 Nov deadline → approve → Aarav sees it with the original PDF.
-   **Aarav submits** the Normalization assignment → rubric pre-check in seconds → professor's inbox shows the feedback draft → approve → Aarav sees the feedback.
-7. **Pay** tuition with test card `4242 4242 4242 4242` → status flips to Paid with a receipt → rate the DBMS professor → professor sees the average and themes only.
-8. **Admin:** Ops digest → run → approve the fee reminder batch → reminders appear in students' activity feeds.
-9. **Security:** Diya asks for Aarav's fees → refused. Jordan logs in: same app, $ and GPA, none of Northfield's data.
-10. **Close:** architecture (above) and what's next.
+Run `npm run seed` first so the data and deadlines are fresh. Each step is one role.
+
+1. **Intro (30 s):** college portals don't talk to each other, and plain chatbots can't see records or act safely. CampusAI is one app for students, professors and admins, where agents do the busywork and humans approve.
+2. **Professor, notes (40 s):** My courses → DBMS → Materials → upload `demo/Unit 3 - Normalization.pdf` → Processing → Ready → the Materials agent's summary → approve the announcement draft right under the file.
+3. **Professor, assignment (40 s):** Assignments → New assignment → upload `demo/Assignment 2 - SQL Joins.pdf` → the Assignment agent drafts the title, questions, rubric and the 6 Nov deadline → approve.
+4. **Student, Aarav (60 s):** the dashboard shows the Planner's week plan and the fee balance. Ask the assistant "Explain 3NF from our notes" (answer cites *Unit 3 - Normalization.pdf, p. 3*), then "What should I focus on this week?"
+5. **Student submits (40 s):** Assignments → Normalization Case Study → submit any PDF → the rubric pre-check appears in seconds.
+6. **Professor reviews (30 s):** open the assignment → the submission shows "draft to review" → edit if needed, approve → Aarav sees the feedback.
+7. **Student pays and rates (30 s):** pay tuition with test card `4242 4242 4242 4242` → Paid with a receipt → rate the DBMS professor. The professor sees only the average and themes.
+8. **Admin (30 s):** Weekly report → Generate report now → approve the fee reminder batch and the announcement → reminders appear in the students' activity feeds.
+9. **Security (20 s):** as Diya, ask the assistant for Aarav's fees → refused. Log in as Jordan: same app, $ and GPA, none of Northfield's data.
+10. **Close (20 s):** the architecture (above): one agent runtime, RLS on every table, the webhook is the only writer of payments. Then what's next.
 
 ## Design decisions
 
