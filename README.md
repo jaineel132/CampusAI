@@ -52,8 +52,6 @@ Open the **[live demo](https://campusai-ashy.vercel.app)** and pick a role. **Th
 
 **Student B and Other college** show the access rules: Diya only sees her own course and is refused Aarav's fees by the assistant, and Jordan's college (US, $, GPA) sees none of Northfield's data.
 
-**Try it yourself (optional):** pay tuition with Stripe's test card `4242 4242 4242 4242`, submit a file, approve a draft, or upload the sample PDFs from [`demo/`](demo) as the professor to watch the agents work live. Changes are saved for real, so other visitors may see them.
-
 ## Demo mode
 
 Reviewers pick a role instead of logging in. Each role is a seeded demo account that the server signs in on their behalf, so every page still runs through Supabase Auth and the same row-level security a real user would. A real deployment would replace this with the college's single sign-on.

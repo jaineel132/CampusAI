@@ -15,8 +15,8 @@ export const DEMO_ROLES = {
       { text: "Courses › DBMS › Materials: notes summarised by the Materials agent", href: "/courses" },
       { text: "Normalization Case Study: instant rubric pre-check, then the professor's feedback", assignment: "Normalization Case Study" },
       { text: "SQL Joins and Aggregation: created by the Assignment agent from the professor's PDF", assignment: "SQL Joins and Aggregation" },
-      { text: "✦ Ask CampusAI (bottom right): try “Explain 3NF from our notes”" },
-      { text: "Fees: pay tuition with Stripe's test card 4242 4242 4242 4242", href: "/fees" },
+      { text: "✦ Ask CampusAI (bottom right): answers from the course notes with page sources" },
+      { text: "Fees: balance, payment history and receipt", href: "/fees" },
     ] as Look[],
   },
   professor: {
@@ -24,10 +24,8 @@ export const DEMO_ROLES = {
     pitch: "Agents draft the busywork: announcements, assignments, feedback. The professor approves.",
     look: [
       { text: "CPU Scheduling Report: Diya's submission with the Submission agent's feedback draft to approve", assignment: "CPU Scheduling Report" },
-      { text: "Approval inbox: every draft waiting for you in one place", href: "/inbox" },
-      { text: "My courses › DBMS: uploaded notes, the agent's summary and the approved announcement", href: "/courses" },
-      { text: "SQL Joins and Aggregation: drafted from a PDF by the Assignment agent, with the original attached", assignment: "SQL Joins and Aggregation" },
-      { text: "Assignments: upload a PDF from the demo/ folder to watch the Assignment agent live", href: "/assignments" },
+      { text: "My courses › DBMS: notes, the Materials agent's summary and the approved announcement", href: "/courses" },
+      { text: "SQL Joins and Aggregation: drafted by the Assignment agent from the professor's PDF", assignment: "SQL Joins and Aggregation" },
       { text: "Ratings & themes: anonymous averages and the Feedback agent's themes", href: "/ratings" },
     ] as Look[],
   },
