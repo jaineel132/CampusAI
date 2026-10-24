@@ -22,9 +22,10 @@ export async function DemoGuide({ email }: { email: string }) {
   return (
     <Disclosure open className="card border-ai-ink/20 bg-ai/30 p-4"
       title={<h2 className="section-title">What the AI agents did for {r.name}</h2>}
-      meta={<span className="text-xs muted">Demo · already done</span>}>
+      meta={<span className="badge bg-warn">Demo guide · not part of the app</span>}>
       <p className="text-sm text-ink/80">
-        You&apos;re viewing the demo as <b>{r.name}, {r.as}</b>. Each row is real work an agent already did. Open it to see the result.
+        This panel is only here for the demo, to help you find things; real users of CampusAI wouldn&apos;t see it. You&apos;re viewing as{" "}
+        <b>{r.name}, {r.as}</b>. Each row is real work an agent already did. Open it to see the result.
       </p>
       <ul className="mt-3 divide-y divide-line overflow-hidden rounded-lg border border-line bg-white">
         {r.look.map((l) => {
