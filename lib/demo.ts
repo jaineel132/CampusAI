@@ -32,8 +32,7 @@ export const DEMO_ROLES = {
     label: "Admin", name: "Rohan", as: "the college admin", email: "admin@northfield.demo", who: "Rohan Iyer · college admin",
     pitch: "The college view: a weekly report written by an agent, with figures straight from the database.",
     look: [
-      { agent: "Report agent", did: "Wrote this week's college report, with every figure taken from the database", href: "/ops" },
-      { agent: "Report agent", did: "Prepared a fee-reminder batch and a college announcement, waiting for your approval", href: "/ops" },
+      { agent: "Report agent", did: "Wrote this week's college report from database figures, and prepared a fee-reminder batch and a college announcement, waiting for your approval", href: "/ops" },
       { agent: "Feedback agent", did: "Summarised professor ratings across the college into anonymous themes", href: "/ratings" },
     ] as Look[],
     ask: ["Which fees are still unpaid?", "Summarise this week's report"],
