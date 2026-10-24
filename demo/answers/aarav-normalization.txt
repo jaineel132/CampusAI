@@ -1,0 +1,14 @@
+Normalization Case Study - Aarav Shah (CS301)
+
+Table: Library(BookID, Title, AuthorID, AuthorName, MemberID, MemberName, IssueDate)
+
+Functional dependencies:
+BookID -> Title, AuthorID
+AuthorID -> AuthorName
+MemberID -> MemberName
+(BookID, MemberID) -> IssueDate
+
+1NF: all attributes are atomic, so the table is already in 1NF.
+2NF: Title and AuthorID depend only on BookID, and MemberName only on MemberID (partial dependencies on the key (BookID, MemberID)). Split into Book(BookID, Title, AuthorID), Member(MemberID, MemberName), Issue(BookID, MemberID, IssueDate).
+3NF: AuthorName depends on AuthorID, which depends on BookID (transitive). Move it to Author(AuthorID, AuthorName).
+Final schema: Book, Author, Member, Issue. Every non-key attribute now depends on the key, the whole key, and nothing but the key.

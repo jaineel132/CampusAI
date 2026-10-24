@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-// Refreshes the Supabase session cookie and sends signed-out visitors to /login.
+// Refreshes the Supabase session cookie and sends signed-out visitors to the role picker (demo mode, no login).
 // Real authorization still happens in getMe() and RLS.
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -17,9 +17,9 @@ export async function proxy(request: NextRequest) {
   });
   const { data: { user } } = await db.auth.getUser();
 
-  const isLogin = request.nextUrl.pathname.startsWith("/login");
-  if (!user && !isLogin) return NextResponse.redirect(new URL("/login", request.url));
-  if (user && isLogin) return NextResponse.redirect(new URL("/dashboard", request.url));
+  const path = request.nextUrl.pathname;
+  const isPublic = path === "/" || path.startsWith("/demo/") || path.startsWith("/login");
+  if (!user && !isPublic) return NextResponse.redirect(new URL("/", request.url));
   return response;
 }
 

@@ -1,9 +1,9 @@
+import Link from "next/link";
 import { createClient, getMe, type Role } from "@/lib/supabase";
-import { signOut } from "@/app/actions";
 import { Assistant } from "@/components/assistant";
-import { SubmitButton } from "@/components/submit-button";
 import { NavLink } from "@/components/nav-link";
 import { MobileMenu } from "@/components/mobile-menu";
+import { DEMO_ROLES, type DemoRole } from "@/lib/demo";
 
 const roleColour: Record<Role, string> = { student: "bg-info", professor: "bg-ai", admin: "bg-ok" };
 
@@ -58,13 +58,26 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <div className="mt-5 rounded-xl bg-white/10 p-3 text-sm md:mt-8">
           <p className="font-semibold">{me.full_name}</p>
           <span className={`badge mt-1 capitalize ${roleColour[me.role]}`}>{me.role}</span>
-          <form action={signOut}>
-            <SubmitButton pending="Signing out…" className="btn-ghost btn-sm mt-3 w-full">Sign out</SubmitButton>
-          </form>
+          <Link href="/" className="mt-3 block text-xs text-white/70 underline hover:text-white">← All demo roles</Link>
         </div>
         </MobileMenu>
       </aside>
-      <main className="min-w-0 flex-1 p-4 pb-24 md:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 pb-24 md:p-8">
+        {/* Demo mode: switch roles in one click, no login. Plain <a> so nothing prefetches a sign-in. */}
+        <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-sm shadow-card">
+          <span className="sticker">Demo</span>
+          <span className="muted">Viewing as <b className="text-ink">{me.full_name}</b> · switch to</span>
+          {(Object.keys(DEMO_ROLES) as DemoRole[]).map((key) => (
+            <a key={key} href={`/demo/${key}`} aria-current={DEMO_ROLES[key].email === me.email ? "true" : undefined}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                DEMO_ROLES[key].email === me.email ? "bg-navy text-white" : "bg-canvas text-ink hover:bg-line"
+              }`}>
+              {DEMO_ROLES[key].label}
+            </a>
+          ))}
+        </div>
+        {children}
+      </main>
       <Assistant role={me.role} />
     </div>
   );

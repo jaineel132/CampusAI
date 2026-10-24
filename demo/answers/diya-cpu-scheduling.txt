@@ -1,0 +1,13 @@
+CPU Scheduling Report - Diya Nair (CS302)
+
+Process set: P1 (burst 8), P2 (burst 4), P3 (burst 2), all arriving at time 0. Round Robin quantum = 2.
+
+FCFS: P1 runs 0-8, P2 8-12, P3 12-14.
+Waiting times: P1 = 0, P2 = 8, P3 = 12. Average waiting time = 6.67.
+
+SJF: P3 runs 0-2, P2 2-6, P1 6-14.
+Waiting times: P3 = 0, P2 = 2, P1 = 6. Average waiting time = 2.67.
+
+Round Robin: I ran out of time to finish the schedule for Round Robin.
+
+Conclusion: SJF gives the lowest average waiting time, so it is the best choice for this process set.

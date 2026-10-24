@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node --env-file=.env.local scripts/seed.mts",
+    "demo": "node --env-file=.env.local scripts/seed.mts && node --env-file=.env.local scripts/demo.mts",
     "test:access": "node --env-file=.env.local scripts/access-test.mts",
     "db:types": "node --env-file=.env.local scripts/db-types.mts",
     "test:chunk": "node scripts/chunk-test.mts",

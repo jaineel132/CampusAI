@@ -4,7 +4,7 @@
 
 College systems are scattered: fees in one portal, notes in another, assignments in a third, and nobody tells you what's due. CampusAI puts everything in one dashboard, and **8 agents** handle the repetitive work. They pre-check submissions against the rubric, turn an assignment PDF into a ready-to-publish assignment, summarise uploaded notes, plan each student's week, send reminders, and write the admin's weekly report. **A human approves anything that is published, sent or changes a record.** It is **built for many colleges at once**: each college has its own currency, term system and grading scale, and its data is fully isolated from every other college.
 
-**[▶ Live demo](https://campusai-ashy.vercel.app)** · [Try it in 5 minutes](#try-it-in-5-minutes) · [Demo accounts](#demo-accounts) · [Screenshots](#screenshots) · [How to run it](#getting-started)
+**[▶ Live demo](https://campusai-ashy.vercel.app): no login, pick a role and explore. Every agent's work is already filled in.** · [What to look at](#what-to-look-at) · [Screenshots](#screenshots) · [How to run it](#getting-started)
 
 ![Student dashboard: the Planner agent's week plan and the fee balance](docs/screenshots/02-student-dashboard.jpg)
 
@@ -13,14 +13,14 @@ College systems are scattered: fees in one portal, notes in another, assignments
 - **One app, three roles.** Students pay fees, read materials, submit work and rate professors. Professors publish materials and assignments and give feedback. Admins see a weekly college report and chase fees.
 - **AI-native, not a chatbot bolted on.** Agents react to events (an upload, a submission, a rating, a schedule) and prepare the work. People just review and approve.
 - **Facts come from the database, never from the AI.** Deadlines, fees and figures are loaded by code; the model only reasons and writes. The Reminder agent uses no AI at all.
-- **Multi-college from day one.** One deployment serves many colleges. Each has its own settings (₹ or $, semesters or quarters, CGPA 10 or GPA 4.0), and every table carries the college's id, so data never crosses between colleges. The demo has two: Northfield (India) and Lakeside (US). Log in as Jordan to see the other one.
+- **Multi-college from day one.** One deployment serves many colleges. Each has its own settings (₹ or $, semesters or quarters, CGPA 10 or GPA 4.0), and every table carries the college's id, so data never crosses between colleges. The demo has two: Northfield (India) and Lakeside (US). Pick "Other college" to see the second one.
 - **Secure by design.** Row-level security on every table checks the college first, then the role, and only Stripe's verified webhook can mark a fee paid.
 - **Built with** Next.js 16 · Supabase (Postgres, pgvector, Auth, Storage) · Vercel AI SDK + Groq · Stripe · Vercel.
 
 ## Table of contents
 
-1. [Try it in 5 minutes](#try-it-in-5-minutes)
-2. [Demo accounts](#demo-accounts)
+1. [What to look at](#what-to-look-at)
+2. [Demo mode](#demo-mode)
 3. [The agents](#the-agents)
 4. [Screenshots](#screenshots)
 5. [Architecture](#architecture)
@@ -30,49 +30,43 @@ College systems are scattered: fees in one portal, notes in another, assignments
 9. [Design decisions](#design-decisions)
 10. [Future scope](#future-scope)
 
-## Try it in 5 minutes
+## What to look at
 
-Open the **[live demo](https://campusai-ashy.vercel.app)** and use the one-click demo accounts on the login page (password `CampusAI-demo-2026`). Download the two sample PDFs from [`demo/`](demo) first. Each step is one role; use a second browser or an incognito window to stay logged in as two people at once.
+Open the **[live demo](https://campusai-ashy.vercel.app)** and pick a role. **There is no login, and nothing to set up:** the agents have already run on the sample data. A "What to look at" card on each dashboard links to every feature, and the bar at the top switches roles in one click.
 
-**1. Professor: publish notes** (Dr. Mehta)
-My courses & uploads → DBMS → Materials → upload `Unit 3 - Normalization.pdf`. It goes Processing → Ready, the **Materials agent** writes a summary and drafts an announcement. Click **Approve** right under the file.
+**As the student (Aarav)**
+- **Dashboard:** the **Planner agent's** ranked plan for the week, the fee balance, deadlines, reminders and the activity feed.
+- **Courses › DBMS › Materials:** lecture notes summarised by the **Materials agent**, plus the announcement the professor approved.
+- **Assignments › Normalization Case Study:** the **Submission agent's** rubric pre-check and the professor's feedback.
+- **Assignments › SQL Joins:** created by the **Assignment agent** from the professor's PDF (the original PDF is attached).
+- **✦ Ask CampusAI:** try "Explain 3NF from our notes". The answer cites the PDF and page.
 
-**2. Professor: publish an assignment from a PDF**
-Assignments → New assignment → upload `Assignment 2 - SQL Joins.pdf` under CS301. The **Assignment agent** drafts the title, questions, rubric and the 6 Nov deadline, quoting the PDF. Check it and **Approve**.
+**As the professor (Dr. Mehta)**
+- **Approval inbox:** Diya's feedback draft and indicative grade, written by the **Submission agent** and waiting to be approved.
+- **My courses:** the uploaded notes with the agent's summary. **Assignments:** the assignment drafted from a PDF.
+- **Ratings & themes:** anonymous averages and the **Feedback agent's** themes. Raw ratings are never visible.
 
-**3. Student: see the week and ask questions** (Aarav)
-The dashboard shows the **Planner agent's** ranked plan and the fee balance. Open **✦ Ask CampusAI** and try "Explain 3NF from our notes" (the answer cites the PDF and page) or "What should I focus on this week?".
+**As the admin (Rohan)**
+- **Weekly report:** the **Report agent's** summary of fees, late work and ratings, with figures straight from the database.
+- **Waiting for approval:** a fee-reminder batch and a college announcement, both prepared by the agent.
 
-**4. Student: submit work**
-Assignments → Normalization Case Study → submit any PDF or TXT. The **Submission agent's** rubric pre-check appears within seconds.
+**Student B and Other college** show the access rules: Diya only sees her own course and is refused Aarav's fees by the assistant, and Jordan's college (US, $, GPA) sees none of Northfield's data.
 
-**5. Professor: give feedback**
-Open the same assignment as Dr. Mehta. The submission shows *draft to review*: edit the feedback if you like, then **Approve**. Aarav now sees it.
+**Try it yourself (optional):** pay tuition with Stripe's test card `4242 4242 4242 4242`, submit a file, approve a draft, or upload the sample PDFs from [`demo/`](demo) as the professor to watch the agents work live. Changes are saved for real, so other visitors may see them.
 
-**6. Student: pay and rate**
-Fees & payments → Pay with Stripe's test card `4242 4242 4242 4242` (any future date, any CVC) → the fee flips to Paid. Then Rate professors → give DBMS a rating. The professor only ever sees the average and anonymous themes.
+## Demo mode
 
-**7. Admin: weekly report** (Rohan)
-Weekly report → **Generate report now**. The **Report agent** summarises fees, late work and ratings from the database, and prepares a fee-reminder batch and an announcement. Approve them; the reminders land in students' activity feeds.
+Reviewers pick a role instead of logging in. Each role is a seeded demo account that the server signs in on their behalf, so every page still runs through Supabase Auth and the same row-level security a real user would. A real deployment would replace this with the college's single sign-on.
 
-**8. Check the security**
-As Diya, ask the assistant "How much does Aarav Shah owe in fees?" (refused). Log in as Jordan: same app, a different college with $ and GPA, and none of Northfield's data.
-
-Everything you do is real (it's saved in the database), so other reviewers may see your test submissions or ratings. Running locally, `npm run seed` resets all demo data.
-
-## Demo accounts
-
-All accounts use the password **`CampusAI-demo-2026`**. The login page has one-click buttons for each.
-
-| Role | Email | College |
+| Role | Who | College |
 | --- | --- | --- |
-| Student (A) | `aarav@northfield.demo` | Northfield Institute of Technology (₹, semesters, CGPA 10). Enrolled in DBMS and OS |
-| Student (B) | `diya@northfield.demo` | Northfield. Enrolled in OS only, so she must never see DBMS material |
-| Professor | `prof.mehta@northfield.demo` | Northfield. Teaches DBMS (CS301) and OS (CS302) |
-| Admin | `admin@northfield.demo` | Northfield |
-| Student | `jordan@lakeside.demo` | Lakeside College (US: $, quarters, GPA 4.0) |
+| Student | Aarav Shah | Northfield Institute of Technology (₹, semesters, CGPA 10). Enrolled in DBMS and OS |
+| Student B | Diya Nair | Northfield. Enrolled in OS only, so she must never see DBMS material |
+| Professor | Dr. Kavita Mehta | Northfield. Teaches DBMS (CS301) and OS (CS302) |
+| Admin | Rohan Iyer | Northfield |
+| Other college | Jordan Lee | Lakeside College (US: $, quarters, GPA 4.0) |
 
-All data is fictional. `npm run seed` resets it and moves every deadline relative to today. Two sample PDFs for trying the agents are in [`demo/`](demo).
+All data is fictional. `npm run demo` resets it and runs every agent on the sample files again (see [Getting started](#getting-started)).
 
 ## The agents
 
@@ -111,7 +105,7 @@ There are **8 agents**, grouped by who they work for: 7 use an LLM, and the Remi
 
 | | |
 | --- | --- |
-| ![Login with one-click demo accounts](docs/screenshots/01-login.jpg) **Login** with one-click demo accounts for every role | ![Student dashboard](docs/screenshots/02-student-dashboard.jpg) **Student dashboard**: the Planner agent ranks the week from real deadlines and fees |
+| ![Role picker: explore as student, professor or admin](docs/screenshots/01-welcome.jpg) **No login:** pick a role and explore; switch roles any time | ![Student dashboard](docs/screenshots/02-student-dashboard.jpg) **Student dashboard**: the Planner agent ranks the week from real deadlines and fees |
 | ![Materials agent summary and announcement draft](docs/screenshots/03-materials-agent.jpg) **Materials agent**: summary of uploaded notes and an announcement draft, approved in place | ![Assignment agent draft](docs/screenshots/04-assignment-agent.jpg) **Assignment agent**: questions, rubric and the exact deadline extracted from the professor's PDF |
 | ![Assistant answering with page sources](docs/screenshots/05-assistant-rag.jpg) **Assistant**: answers from the course notes, citing the document and page | ![Rubric pre-check](docs/screenshots/06-submission-precheck.jpg) **Submission agent**: rubric pre-check within seconds of submitting |
 | ![Weekly college report](docs/screenshots/07-weekly-report.jpg) **Report agent**: the weekly college report with fee reminders and an announcement to approve | ![Fee paid through Stripe test checkout](docs/screenshots/09-stripe-payment.jpg) **Fees**: paid with Stripe (test mode). Only the verified webhook can mark a fee paid, and it is recorded once even if Stripe retries |
@@ -180,8 +174,8 @@ npm install
 cp .env.example .env.local            # fill in the values (see below)
 npx supabase db push --db-url "$SUPABASE_DB_URL"
 npx supabase login && npx supabase functions deploy embed --project-ref <project-ref>
-npm run seed                          # 2 colleges, 6 demo users
-npm run dev                           # http://localhost:3000
+npm run dev                           # http://localhost:3000 (leave running)
+npm run demo                          # seed 2 colleges + run every agent on the sample files (a few minutes)
 ```
 
 **Stripe:** create a webhook destination for `checkout.session.completed` pointing to `https://<your-domain>/api/stripe/webhook`, then put its signing secret in `STRIPE_WEBHOOK_SECRET`.

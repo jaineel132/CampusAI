@@ -40,16 +40,16 @@ export type Me = {
   institution: { id: string; name: string; currency: string; term_type: string; grading_scale: string; current_term: string };
 };
 
-// Current user + profile + college settings, once per request. Redirects to /login if signed out.
+// Current user + profile + college settings, once per request. Redirects to the role picker if signed out.
 export const getMe = cache(async (): Promise<Me> => {
   const db = await createClient();
   const { data: { user } } = await db.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/");
   const { data } = await db
     .from("profiles")
     .select("id, role, full_name, email, institution:institutions(id, name, currency, term_type, grading_scale, current_term)")
     .eq("id", user.id)
     .single();
-  if (!data) redirect("/login");
+  if (!data) redirect("/");
   return data as unknown as Me;
 });

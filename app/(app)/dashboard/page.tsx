@@ -10,6 +10,7 @@ import { refreshPlan } from "./actions";
 import { LocalTime } from "@/components/local-time";
 import { StatusBadge } from "@/components/status-badge";
 import { Disclosure } from "@/components/disclosure";
+import { DemoGuide } from "@/components/demo-guide";
 
 const card = "card p-5";
 
@@ -22,6 +23,7 @@ export default async function Dashboard() {
         <h1 className="heading">Welcome, {me.role === "student" ? me.full_name.split(" ")[0] : me.full_name}</h1>
         <p className="text-sm text-ink/70">{i.name} · {i.current_term}</p>
       </div>
+      <DemoGuide email={me.email} />
       {me.role === "student" && <StudentDashboard me={me} />}
       {me.role === "professor" && <ProfessorDashboard me={me} />}
       {me.role === "admin" && <AdminDashboard me={me} />}
