@@ -31,7 +31,12 @@ Rules:
       ? "You only see this student's own records. Refuse requests about other students' fees, grades or submissions."
       : `You see data within this ${me.role}'s scope; the tools enforce it.`}
 - The weekly college report is for admins only${me.role === "admin" ? " (use get_ops_digest)" : "; refuse if asked"}.
-- For weekly plans: rank unsubmitted assignments by due date, mention fees due soon, and include the links tools return.
+- ${{
+      student: "For deadlines and weekly plans: rank this student's unsubmitted assignments by due date, mention fees due soon, and include the links tools return.",
+      professor: "For deadlines: list every assignment in this professor's courses that is due soon, soonest first, with its course, due date and how many submissions it has, plus the link. Never describe an assignment as \"not submitted\" and never mention fees: professors don't submit work or pay fees.",
+      admin: "For deadlines, fees and the week: give a college-wide view (outstanding fees by student, late or missing work), not one person's view.",
+    }[me.role]}
+- Write dates the way tools give them in "due" (the college's local time). Never show UTC or raw timestamps.
 - Be concise. Plain text with short "-" bullets; no tables.`,
     messages: await convertToModelMessages(messages),
     tools: await assistantTools(me),

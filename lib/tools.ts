@@ -4,6 +4,14 @@ import { z } from "zod";
 import { createClient, type Me } from "./supabase";
 import { embed } from "./ai";
 
+// Deadlines in the college's local time, so the assistant never shows UTC.
+// ponytail: time zone inferred from the currency (two demo colleges); add a timezone column to institutions for more.
+const localDate = (iso: string, currency: string) =>
+  new Date(iso).toLocaleString(currency === "INR" ? "en-IN" : "en-US", {
+    timeZone: currency === "INR" ? "Asia/Kolkata" : "America/Chicago",
+    day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
+  });
+
 // Assistant tools. Every query runs as the session user through RLS, so a tool can never
 // return another student's or another college's data. The model never supplies a user id.
 export async function assistantTools(me: Me) {
@@ -45,6 +53,7 @@ export async function assistantTools(me: Me) {
           now: new Date().toISOString(),
           assignments: (data ?? []).map(({ submissions, ...a }) => ({
             ...a,
+            due: localDate(a.due_at, me.institution.currency),
             link: `/assignments/${a.id}`,
             ...(me.role === "student"
               ? { my_submission: submissions.find((s) => s.student_id === me.id) ?? null }
@@ -67,6 +76,12 @@ export async function assistantTools(me: Me) {
     }),
   };
 
+  // Professors have no fee data, so they don't get the fee tool (it only invited "no pending fees" answers).
+  if (me.role === "professor") {
+    const { get_fees, ...forProfessor } = tools;
+    void get_fees;
+    return forProfessor;
+  }
   // Admin-only: for any other role this tool does not exist, so the model cannot call it.
   if (me.role !== "admin") return tools;
   return {
