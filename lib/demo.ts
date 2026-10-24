@@ -3,59 +3,60 @@
 // ponytail: shared demo password on the server; a real deployment uses the college's SSO instead.
 export const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? "CampusAI-demo-2026";
 
+// One row of "What the AI agents did": which agent, what it already did, where to see it.
 // `assignment` links straight to that assignment's page; its id is looked up at render time (ids change on every reset).
-type Look = { text: string; href?: string; assignment?: string };
+type Look = { agent: string; did: string; href?: string; assignment?: string };
 
 export const DEMO_ROLES = {
   student: {
-    label: "Student", email: "aarav@northfield.demo", who: "Aarav Shah · Northfield (India)",
+    label: "Student", name: "Aarav", as: "a student", email: "aarav@northfield.demo", who: "Aarav Shah · Northfield (India)",
     pitch: "The student dashboard: week plan, materials, assignments, fees and ratings in one place.",
     look: [
-      { text: "Dashboard: the Planner agent's ranked plan for the week", href: "/dashboard" },
-      { text: "Courses › DBMS › Materials: notes summarised by the Materials agent", href: "/courses" },
-      { text: "Normalization Case Study: instant rubric pre-check, then the professor's feedback", assignment: "Normalization Case Study" },
-      { text: "SQL Joins and Aggregation: created by the Assignment agent from the professor's PDF", assignment: "SQL Joins and Aggregation" },
-      { text: "✦ Ask CampusAI (bottom right): answers from the course notes with page sources" },
-      { text: "Fees: balance, payment history and receipt", href: "/fees" },
+      { agent: "Planner agent", did: "Ranked his week from his real deadlines and fees", href: "/dashboard#plan" },
+      { agent: "Submission agent", did: "Checked his Normalization answer against the rubric; the professor's feedback is released", assignment: "Normalization Case Study" },
     ] as Look[],
+    ask: ["What's due this week?", "Explain 3NF from our notes", "How much do I owe in fees?"],
   },
   professor: {
-    label: "Professor", email: "prof.mehta@northfield.demo", who: "Dr. Kavita Mehta · teaches DBMS and OS",
+    label: "Professor", name: "Dr. Mehta", as: "a professor", email: "prof.mehta@northfield.demo", who: "Dr. Kavita Mehta · teaches DBMS and OS",
     pitch: "Agents draft the busywork: announcements, assignments, feedback. The professor approves.",
     look: [
-      { text: "CPU Scheduling Report: Diya's submission with the Submission agent's feedback draft to approve", assignment: "CPU Scheduling Report" },
-      { text: "My courses › DBMS: notes, the Materials agent's summary and the approved announcement", href: "/courses" },
-      { text: "SQL Joins and Aggregation: drafted by the Assignment agent from the professor's PDF", assignment: "SQL Joins and Aggregation" },
-      { text: "Ratings & themes: anonymous averages and the Feedback agent's themes", href: "/ratings" },
+      { agent: "Submission agent", did: "Pre-checked Diya's CPU Scheduling report and drafted feedback and a grade, waiting for your approval", assignment: "CPU Scheduling Report" },
+      { agent: "Assignment agent", did: "Drafted “Transactions and Concurrency Control” from your PDF: questions, rubric and deadline, waiting for your approval", href: "/assignments" },
+      { agent: "Materials agent", did: "Summarised your new OS Unit 2 notes and drafted an announcement for students, waiting for your approval", href: "/courses" },
+      { agent: "Feedback agent", did: "Turned anonymous student ratings into themes, with no names", href: "/ratings" },
     ] as Look[],
+    ask: ["Which assignments are due soon?", "Summarise our Unit 3 notes"],
   },
   admin: {
-    label: "Admin", email: "admin@northfield.demo", who: "Rohan Iyer · college admin",
+    label: "Admin", name: "Rohan", as: "the college admin", email: "admin@northfield.demo", who: "Rohan Iyer · college admin",
     pitch: "The college view: a weekly report written by an agent, with figures straight from the database.",
     look: [
-      { text: "Weekly report: the Report agent's summary of fees, late work and ratings", href: "/ops" },
-      { text: "Approval inbox: a fee-reminder batch and a college announcement to approve", href: "/inbox" },
-      { text: "Fees overview: every student's balance (read-only)", href: "/fees" },
-      { text: "Ratings & themes: college-wide, anonymous", href: "/ratings" },
+      { agent: "Report agent", did: "Wrote this week's college report, with every figure taken from the database", href: "/ops" },
+      { agent: "Report agent", did: "Prepared a fee-reminder batch and a college announcement, waiting for your approval", href: "/ops" },
+      { agent: "Feedback agent", did: "Summarised professor ratings across the college into anonymous themes", href: "/ratings" },
     ] as Look[],
+    ask: ["Which fees are still unpaid?", "Summarise this week's report"],
   },
   "student-b": {
-    label: "Student B", email: "diya@northfield.demo", who: "Diya Nair · enrolled in OS only",
+    label: "Student B", name: "Diya", as: "a second student", email: "diya@northfield.demo", who: "Diya Nair · enrolled in OS only",
     pitch: "Shows the access rules: a second student who must never see Aarav's data or DBMS material.",
     look: [
-      { text: "Only OS appears: no DBMS course, notes or assignments", href: "/courses" },
-      { text: "Ask the assistant “How much does Aarav Shah owe in fees?”: it is refused" },
-      { text: "CPU Scheduling Report: her pre-check shows what is missing", assignment: "CPU Scheduling Report" },
+      { agent: "Submission agent", did: "Her CPU Scheduling pre-check shows exactly what is missing", assignment: "CPU Scheduling Report" },
+      { agent: "Planner agent", did: "Built her own week plan, from only her course and fees", href: "/dashboard#plan" },
+      { agent: "Privacy", did: "Only her OS course is visible: no DBMS notes, assignments or other students' records", href: "/courses" },
     ] as Look[],
+    ask: ["How much does Aarav Shah owe in fees?"],
   },
   "other-college": {
-    label: "Other college", email: "jordan@lakeside.demo", who: "Jordan Lee · Lakeside College (US)",
+    label: "Other college", name: "Jordan", as: "a student at another college", email: "jordan@lakeside.demo", who: "Jordan Lee · Lakeside College (US)",
     pitch: "Multi-college: the same app with $, quarters and GPA 4.0, and none of Northfield's data.",
     look: [
-      { text: "Fees in $ and the Fall quarter", href: "/fees" },
-      { text: "A different course list: nothing from Northfield is visible", href: "/courses" },
-      { text: "Loops Lab: Lakeside's own assignment, with its own deadline and rubric", assignment: "Loops Lab" },
+      { agent: "Planner agent", did: "Built Jordan's week plan in Lakeside's own terms", href: "/dashboard#plan" },
+      { agent: "Multi-college", did: "Fees in $, quarters and GPA 4.0, and none of Northfield's data", href: "/fees" },
+      { agent: "Assignment", did: "Lakeside's own “Loops Lab”, with its own deadline and rubric", assignment: "Loops Lab" },
     ] as Look[],
+    ask: ["What do I owe in fees?"],
   },
 } as const;
 

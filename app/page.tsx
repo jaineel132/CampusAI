@@ -13,8 +13,8 @@ export default async function Welcome(props: PageProps<"/">) {
         <h1 className="text-4xl font-bold tracking-tight text-navy">Campus<span className="text-gold">AI</span></h1>
         <p className="text-lg text-ink/80">One college app where AI agents do the busywork, for students, professors and admins.</p>
         <p className="text-sm muted">
-          No login needed: pick a role to explore. Everything is already filled in by the agents (notes summarised, an assignment drafted
-          from a PDF, submissions pre-checked, feedback, ratings, reminders and the weekly report). You can switch roles at any time.
+          Pick a role to explore. Everything is already filled in by the AI agents (notes summarised, an assignment drafted from a PDF,
+          submissions pre-checked, feedback, ratings, reminders and the weekly report). You can switch roles at any time.
         </p>
         {error && <p role="alert" className="text-sm text-danger-ink">The demo accounts are being reset. Try again in a minute.</p>}
       </div>
@@ -29,7 +29,7 @@ export default async function Welcome(props: PageProps<"/">) {
               <span className="text-xs muted">{r.who}</span>
               <span className="text-sm text-ink/80">{r.pitch}</span>
               <ul className="list-disc space-y-1 pl-4 text-xs text-ink/70">
-                {r.look.slice(0, 3).map((l) => <li key={l.text}>{l.text}</li>)}
+                {r.look.slice(0, 3).map((l) => <li key={l.did}><b>{l.agent}:</b> {l.did}</li>)}
               </ul>
               <span className="btn mt-auto">Enter as {r.label} →</span>
             </a>

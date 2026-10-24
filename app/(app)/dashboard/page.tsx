@@ -99,7 +99,7 @@ async function WeekPlan({ me }: { me: Me }) {
   const plan = run?.status === "succeeded" ? (run.output as unknown as Plan) : null;
 
   return (
-    <section className={`${card} space-y-3 md:col-span-2`}>
+    <section id="plan" className={`${card} scroll-mt-4 space-y-3 md:col-span-2`}>
       <AutoRefresh active={running || stale} />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="section-title">This week&apos;s plan</h2>
@@ -151,7 +151,7 @@ async function ActivityFeed({ me }: { me: Me }) {
   ].toSorted((a, b) => b.at.localeCompare(a.at)).slice(0, 8);
 
   return (
-    <Disclosure className={card}
+    <Disclosure id="activity" className={card}
       title={<h2 className="section-title">Agent activity</h2>}
       meta={<span className="text-xs muted">{items[0] ? <>Latest: {items[0].title} · {relative(items[0].at)}</> : "Nothing yet"}</span>}>
       <ul className="space-y-2 text-sm">

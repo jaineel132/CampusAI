@@ -1,0 +1,67 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Length 1045 >>
+stream
+BT /F2 16 Tf 50 775 Td (CS302 Operating Systems) Tj ET
+BT /F2 14 Tf 50 752 Td (Unit 2: CPU Scheduling) Tj ET
+BT /F1 11 Tf 50 732 Td (Northfield Institute of Technology - Dr. Kavita Mehta) Tj ET
+BT /F2 12 Tf 50 691 Td (1. Why scheduling matters) Tj ET
+BT /F1 11 Tf 50 671 Td (The CPU scheduler picks which ready process runs next. Goals: high CPU utilisation,) Tj ET
+BT /F1 11 Tf 50 651 Td (high throughput, and low waiting, turnaround and response times.) Tj ET
+BT /F2 12 Tf 50 610 Td (2. First-Come, First-Served \(FCFS\)) Tj ET
+BT /F1 11 Tf 50 590 Td (Processes run in arrival order. Simple, but a long job delays all short ones behind it) Tj ET
+BT /F1 11 Tf 50 570 Td (\(the convoy effect\), so average waiting time can be high.) Tj ET
+BT /F2 12 Tf 50 529 Td (3. Shortest Job First \(SJF\)) Tj ET
+BT /F1 11 Tf 50 509 Td (Runs the process with the shortest next CPU burst. It gives the minimum average waiting) Tj ET
+BT /F1 11 Tf 50 489 Td (time for a given set of processes, but needs burst lengths in advance and can starve long jobs.) Tj ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 3 0 R >>
+endobj
+5 0 obj
+<< /Length 930 >>
+stream
+BT /F2 12 Tf 50 779 Td (4. Round Robin \(RR\)) Tj ET
+BT /F1 11 Tf 50 759 Td (Each process gets a fixed time quantum, then goes to the back of the ready queue.) Tj ET
+BT /F1 11 Tf 50 739 Td (Good response time for interactive systems. Too small a quantum adds context-switch) Tj ET
+BT /F1 11 Tf 50 719 Td (overhead; too large and RR behaves like FCFS.) Tj ET
+BT /F2 12 Tf 50 678 Td (5. Worked example) Tj ET
+BT /F1 11 Tf 50 658 Td (P1 = 8, P2 = 4, P3 = 2 \(all arrive at 0\). FCFS average wait = 6.67; SJF average wait = 2.67;) Tj ET
+BT /F1 11 Tf 50 638 Td (RR \(quantum 2\) average wait = 5.33. Draw a Gantt chart for each to check your answer.) Tj ET
+BT /F2 12 Tf 50 597 Td (6. Key terms) Tj ET
+BT /F1 11 Tf 50 577 Td (Waiting time = turnaround time - burst time. Turnaround time = completion time - arrival time.) Tj ET
+BT /F1 11 Tf 50 557 Td (Preemptive schedulers \(RR, preemptive SJF\) can interrupt a running process.) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000001218 00000 n 
+0000001354 00000 n 
+0000002335 00000 n 
+0000002471 00000 n 
+0000002541 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+2616
+%%EOF

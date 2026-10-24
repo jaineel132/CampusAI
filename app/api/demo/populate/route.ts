@@ -15,25 +15,46 @@ const PAUSE_MS = 12_000;
 
 // Fills a freshly seeded demo with real agent output, so reviewers see every feature without doing any setup.
 // Run after `npm run seed` (npm run demo does both). Bearer CRON_SECRET. Reads the sample files from demo/, so run it locally.
+// Streams one line per finished step: the run takes several minutes, and a silent request would hit the 5-minute HTTP timeout.
 export async function POST(req: Request) {
   if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) return new Response("Unauthorized", { status: 401 });
+  const enc = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const say = (line: string) => controller.enqueue(enc.encode(line + "\n"));
+      try {
+        say(JSON.stringify(await populate(say)));
+      } catch (e) {
+        say(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }));
+      }
+      controller.close();
+    },
+  });
+  return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
+}
+
+async function populate(say: (line: string) => void) {
   const db = createServiceClient();
   const log: { step: string; ok: boolean }[] = [];
+  const record = (step: string, ok: boolean) => {
+    log.push({ step, ok });
+    say(`${ok ? "✓" : "✗"} ${step}`);
+  };
 
   // One LLM step: run it, check it produced its result, retry once after a longer pause (rate limits).
   async function step(name: string, run: () => Promise<unknown>, done: () => Promise<boolean>) {
     for (let attempt = 0; attempt < 2; attempt++) {
       await run();
-      if (await done()) return log.push({ step: name, ok: true });
+      if (await done()) return record(name, true);
       await sleep(30_000);
     }
-    log.push({ step: name, ok: false });
+    record(name, false);
   }
 
   const { data: colleges } = await db.from("institutions").select("id, slug").in("slug", ["northfield", "lakeside"]);
   const A = colleges?.find((c) => c.slug === "northfield")?.id;
   const B = colleges?.find((c) => c.slug === "lakeside")?.id;
-  if (!A || !B) return Response.json({ error: "Seed the demo first (npm run seed)." }, { status: 409 });
+  if (!A || !B) return { error: "Seed the demo first (npm run seed)." };
 
   const { data: people } = await db.from("profiles").select("id, email").in("institution_id", [A, B]);
   const user = (email: string) => people!.find((p) => p.email === email)!.id;
@@ -60,7 +81,7 @@ export async function POST(req: Request) {
   await step("Materials agent: notes indexed and summarised", () => ingestDocument(doc!.id), async () =>
     (await db.from("documents").select("summary_status").eq("id", doc!.id).single()).data?.summary_status === "done");
   const { data: announcement } = await db.from("approvals").select("id").eq("kind", "announcement").eq("status", "pending").eq("payload->>document_id", doc!.id).maybeSingle();
-  if (announcement) log.push({ step: "Professor approved the announcement", ok: !(await decideApproval(db, announcement.id, mehta, "approved")) });
+  if (announcement) record("Professor approved the announcement", !(await decideApproval(db, announcement.id, mehta, "approved")));
   await sleep(PAUSE_MS);
 
   // 2. Assignment agent: professor uploads the assignment PDF → draft → approved (assignment created with the PDF).
@@ -78,8 +99,28 @@ export async function POST(req: Request) {
     const local = (briefDraft.payload as { due_local?: string | null }).due_local;
     // The PDF's deadline is local college time (IST); fall back to two weeks out if it had none.
     const due = local ? new Date(`${local}:00+05:30`) : new Date(Date.now() + 14 * 864e5);
-    log.push({ step: "Professor approved the assignment", ok: !(await decideApproval(db, briefDraft.id, mehta, "approved", { due_at: due.toISOString() })) });
+    record("Professor approved the assignment", !(await decideApproval(db, briefDraft.id, mehta, "approved", { due_at: due.toISOString() })));
   }
+  await sleep(PAUSE_MS);
+
+  // 2b. Drafts left for the professor to approve: new OS notes (announcement draft) and a second assignment PDF.
+  const osNotes = "Unit 2 - CPU Scheduling.pdf";
+  const osNotesPath = `${A}/${os.id}/${crypto.randomUUID()}-${safeName(osNotes)}`;
+  await upload("materials", osNotesPath, osNotes, "application/pdf");
+  const { data: osDoc } = await db.from("documents")
+    .insert({ institution_id: A, course_id: os.id, uploaded_by: mehta, title: osNotes, file_path: osNotesPath }).select("id").single();
+  await step("Materials agent: OS notes summarised, announcement left to approve", () => ingestDocument(osDoc!.id), async () =>
+    (await db.from("documents").select("summary_status").eq("id", osDoc!.id).single()).data?.summary_status === "done");
+  await sleep(PAUSE_MS);
+
+  const brief2 = "Assignment 3 - Transactions.pdf";
+  const brief2Path = `${A}/${dbms.id}/briefs/${crypto.randomUUID()}-${safeName(brief2)}`;
+  await upload("materials", brief2Path, brief2, "application/pdf");
+  await step("Assignment agent: second assignment drafted, left to approve", async () => {
+    const { data: run } = await db.from("agent_runs")
+      .insert({ institution_id: A, agent: "assignment", trigger: "event", user_id: mehta, input: { course_id: dbms.id, file_name: brief2 } }).select("id").single();
+    await assignmentAgent(run!.id, { institutionId: A, courseId: dbms.id, professorId: mehta, path: brief2Path, fileName: brief2 });
+  }, async () => !!(await draft()).data);
   await sleep(PAUSE_MS);
 
   // 3. Submission agent: Aarav (good answer, feedback approved) and Diya (partial answer, feedback left for the professor).
@@ -95,7 +136,7 @@ export async function POST(req: Request) {
   const aaravSub = await submit(aarav, assignment("Normalization Case Study"), "aarav-normalization.txt");
   await step("Submission agent: Aarav's pre-check + feedback draft", () => submissionAgent(aaravSub), checked(aaravSub));
   const { data: feedback } = await db.from("approvals").select("id").eq("kind", "feedback_draft").eq("status", "pending").eq("payload->>submission_id", aaravSub).maybeSingle();
-  if (feedback) log.push({ step: "Professor approved Aarav's feedback", ok: !(await decideApproval(db, feedback.id, mehta, "approved")) });
+  if (feedback) record("Professor approved Aarav's feedback", !(await decideApproval(db, feedback.id, mehta, "approved")));
   await sleep(PAUSE_MS);
   const diyaSub = await submit(diya, assignment("CPU Scheduling Report"), "diya-cpu-scheduling.txt");
   await step("Submission agent: Diya's pre-check (feedback left to approve)", () => submissionAgent(diyaSub), checked(diyaSub));
@@ -118,18 +159,18 @@ export async function POST(req: Request) {
   const { error: payError } = await db.rpc("record_payment", {
     p_fee_record_id: library!.id, p_amount: 2500, p_currency: "INR", p_session_id: `cs_test_seed_${Date.now()}`, p_receipt_url: "",
   });
-  log.push({ step: "Payment recorded (library fee)", ok: !payError });
+  record("Payment recorded (library fee)", !payError);
 
   // 6. Reminder agent (rule-based) and Report agent for both colleges; their drafts stay pending for the admin.
   await runReminders();
-  log.push({ step: "Reminder agent: reminders sent", ok: true });
+  record("Reminder agent: reminders sent", true);
   for (const [college, label] of [[A, "Northfield"], [B, "Lakeside"]] as const) {
     let ok = false;
     for (let attempt = 0; attempt < 2 && !ok; attempt++) {
       ok = (await runOpsDigest(college, "schedule", college === A ? admin : undefined)).ok;
       if (!ok) await sleep(30_000);
     }
-    log.push({ step: `Report agent: weekly report for ${label}`, ok });
+    record(`Report agent: weekly report for ${label}`, ok);
     await sleep(PAUSE_MS);
   }
 
@@ -140,5 +181,5 @@ export async function POST(req: Request) {
     await sleep(PAUSE_MS);
   }
 
-  return Response.json({ ok: log.every((l) => l.ok), steps: log });
+  return { ok: log.every((l) => l.ok), steps: log };
 }

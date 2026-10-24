@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 
@@ -36,6 +36,17 @@ export function Assistant({ role }: { role: string }) {
     sendMessage({ text }, { body: { path } });
     setInput("");
   };
+
+  // One-click example questions elsewhere on the page (AskChip) open the panel and ask.
+  // No deps on purpose: re-subscribes each render so `ask` always sees the current status and path.
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      setOpen(true);
+      ask((e as CustomEvent<string>).detail);
+    };
+    window.addEventListener("campusai:ask", onAsk);
+    return () => window.removeEventListener("campusai:ask", onAsk);
+  });
 
   if (!open)
     return (

@@ -1,0 +1,50 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Length 1335 >>
+stream
+BT /F2 16 Tf 50 775 Td (CS301 Database Management Systems) Tj ET
+BT /F2 14 Tf 50 752 Td (Assignment 3: Transactions and Concurrency Control) Tj ET
+BT /F1 11 Tf 50 732 Td (Northfield Institute of Technology - 2026 Odd Semester - Dr. Kavita Mehta) Tj ET
+BT /F2 12 Tf 50 691 Td (Submission deadline: on or before 13 November 2026, 11:59 PM) Tj ET
+BT /F1 11 Tf 50 671 Td (Submit one PDF on CampusAI.) Tj ET
+BT /F2 12 Tf 50 630 Td (Task) Tj ET
+BT /F1 11 Tf 50 610 Td (Q1. Explain the four ACID properties with one banking example each.) Tj ET
+BT /F1 11 Tf 50 590 Td (Q2. Given the schedule S: R1\(A\) W2\(A\) R2\(B\) W1\(B\), draw its precedence graph and say whether it is conflict-serializable.) Tj ET
+BT /F1 11 Tf 50 570 Td (Q3. Show how two-phase locking \(2PL\) prevents the lost update problem for two transfers on the same account.) Tj ET
+BT /F1 11 Tf 50 550 Td (Q4. In 150-200 words, compare strict 2PL with timestamp ordering.) Tj ET
+BT /F2 12 Tf 50 509 Td (Marking scheme \(20 marks\)) Tj ET
+BT /F1 11 Tf 50 489 Td (- ACID properties with correct examples \(5 marks\)) Tj ET
+BT /F1 11 Tf 50 469 Td (- Precedence graph and serializability verdict \(5 marks\)) Tj ET
+BT /F1 11 Tf 50 449 Td (- 2PL lost-update walkthrough \(6 marks\)) Tj ET
+BT /F1 11 Tf 50 429 Td (- Comparison of strict 2PL and timestamp ordering \(4 marks\)) Tj ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 3 0 R >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000001502 00000 n 
+0000001638 00000 n 
+0000001708 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+1783
+%%EOF

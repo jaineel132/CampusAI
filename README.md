@@ -43,7 +43,7 @@ Open the **[live demo](https://campusai-ashy.vercel.app)** and pick a role. **Th
 
 **As the professor (Dr. Mehta)**
 - **Approval inbox:** Diya's feedback draft and indicative grade, written by the **Submission agent** and waiting to be approved.
-- **My courses:** the uploaded notes with the agent's summary. **Assignments:** the assignment drafted from a PDF.
+- **Drafts waiting for approval:** an assignment the **Assignment agent** drafted from a PDF (questions, rubric, deadline) and an announcement the **Materials agent** drafted for new OS notes. Approved examples of both are already live for students.
 - **Ratings & themes:** anonymous averages and the **Feedback agent's** themes. Raw ratings are never visible.
 
 **As the admin (Rohan)**
